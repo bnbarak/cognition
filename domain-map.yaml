@@ -71,14 +71,12 @@ pages:
     section: "Token Format"
     sources:
       - file: javascript/src/types/auth.ts
-        lines: [8, 12]
         concern: "AuthTokens interface defines accessToken, refreshToken, expiresIn"
 
   - doc: docs/docs/authentication.md
     section: "Roles & Permissions"
     sources:
       - file: javascript/src/types/auth.ts
-        lines: [22, 29]
         concern: "RegisterRequest.role enum defines available roles"
 
   - doc: docs/docs/authentication.md
@@ -96,7 +94,6 @@ pages:
         lines: [14, 50]
         concern: "Login route handler and OpenAPI JSDoc annotation"
       - file: javascript/src/types/auth.ts
-        lines: [1, 19]
         concern: "LoginRequest and AuthResponse type definitions"
 
   - doc: docs/docs/api/auth-controller.md
@@ -106,7 +103,6 @@ pages:
         lines: [52, 101]
         concern: "Register route handler and OpenAPI JSDoc annotation"
       - file: javascript/src/types/auth.ts
-        lines: [22, 40]
         concern: "RegisterRequest and UserProfile type definitions"
 
   - doc: docs/docs/api/auth-controller.md
@@ -116,7 +112,6 @@ pages:
         lines: [103, 135]
         concern: "Refresh token route handler and OpenAPI JSDoc annotation"
       - file: javascript/src/types/auth.ts
-        lines: [43, 45]
         concern: "RefreshTokenRequest type definition"
 
   - doc: docs/docs/api/auth-controller.md
@@ -126,17 +121,15 @@ pages:
         lines: [137, 165]
         concern: "Forgot password route handler and OpenAPI JSDoc annotation"
       - file: javascript/src/types/auth.ts
-        lines: [48, 50]
         concern: "ForgotPasswordRequest type definition"
 
   - doc: docs/docs/api/auth-controller.md
     section: "POST /api/auth/reset-password"
     sources:
       - file: javascript/src/routes/auth.ts
-        lines: [167, 198]
+        lines: [167, 196]
         concern: "Reset password route handler and OpenAPI JSDoc annotation"
       - file: javascript/src/types/auth.ts
-        lines: [53, 56]
         concern: "ResetPasswordRequest type definition"
 
   # ── Clients Controller API ────────────────
@@ -195,7 +188,7 @@ pages:
     section: "POST /api/clients/{clientId}/policies"
     sources:
       - file: javascript/src/routes/clients.ts
-        lines: [265, 315]
+        lines: [265, 313]
         concern: "Add policy route handler and OpenAPI JSDoc"
       - file: javascript/src/types/client.ts
         lines: [1, 14]
