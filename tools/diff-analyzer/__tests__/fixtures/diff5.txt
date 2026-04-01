@@ -1,0 +1,208 @@
+diff --git a/javascript/src/routes/auth.ts b/javascript/src/routes/auth.ts
+index b029aec..36e179f 100644
+--- a/javascript/src/routes/auth.ts
++++ b/javascript/src/routes/auth.ts
+@@ -11,6 +11,11 @@ import type {
+ 
+ const router = Router();
+ 
++/** In-memory rate limiter for login attempts */
++const loginAttempts: Map<string, { count: number; lockedUntil: number | null }> = new Map();
++const MAX_LOGIN_ATTEMPTS = 5;
++const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
++
+ /**
+  * @openapi
+  * /api/auth/login:
+@@ -35,9 +40,27 @@ const router = Router();
+  *         description: Successfully authenticated
+  *       401:
+  *         description: Invalid credentials
++ *       423:
++ *         description: Account locked due to too many failed attempts
+  */
+ router.post("/login", (req: Request<{}, AuthResponse, LoginRequest>, res: Response<AuthResponse>) => {
+   const { email } = req.body;
++
++  // Rate limiting check
++  const attempts = loginAttempts.get(email);
++  if (attempts?.lockedUntil && Date.now() < attempts.lockedUntil) {
++    const remainingMs = attempts.lockedUntil - Date.now();
++    const remainingMin = Math.ceil(remainingMs / 60000);
++    res.status(423).json({
++      success: false,
++      message: `Account locked. Try again in ${remainingMin} minute(s).`,
++    });
++    return;
++  }
++
++  // Reset attempts on successful login (mock: always succeeds)
++  loginAttempts.set(email, { count: 0, lockedUntil: null });
++
+   res.json({
+     success: true,
+     message: "Login successful",
+@@ -85,6 +108,7 @@ router.post("/login", (req: Request<{}, AuthResponse, LoginRequest>, res: Respon
+  */
+ router.post("/register", (req: Request<{}, AuthResponse & { user?: UserProfile }, RegisterRequest>, res: Response) => {
+   const { email, firstName, lastName, agencyName, role } = req.body;
++  const agencyId = "agency_" + Math.random().toString(36).substring(2, 10);
+   res.status(201).json({
+     success: true,
+     message: "Registration successful",
+@@ -94,6 +118,7 @@ router.post("/register", (req: Request<{}, AuthResponse & { user?: UserProfile }
+       firstName,
+       lastName,
+       agencyName,
++      agencyId,
+       role,
+       createdAt: new Date().toISOString(),
+     },
+diff --git a/javascript/src/routes/clients.ts b/javascript/src/routes/clients.ts
+index c2b85e0..639bc82 100644
+--- a/javascript/src/routes/clients.ts
++++ b/javascript/src/routes/clients.ts
+@@ -262,6 +262,69 @@ router.delete("/:clientId", (req: Request<{ clientId: string }>, res: Response)
+   res.json({ success: true, message: `Client ${req.params.clientId} deleted` });
+ });
+ 
++/**
++ * @openapi
++ * /api/clients/{clientId}/tags:
++ *   patch:
++ *     summary: Bulk update tags on a client
++ *     description: Add or remove multiple tags from a client in a single request. Supports add and remove operations.
++ *     tags: [Clients]
++ *     parameters:
++ *       - in: path
++ *         name: clientId
++ *         required: true
++ *         schema:
++ *           type: string
++ *     requestBody:
++ *       required: true
++ *       content:
++ *         application/json:
++ *           schema:
++ *             type: object
++ *             properties:
++ *               add:
++ *                 type: array
++ *                 items:
++ *                   type: string
++ *                 description: Tags to add to the client
++ *               remove:
++ *                 type: array
++ *                 items:
++ *                   type: string
++ *                 description: Tags to remove from the client
++ *     responses:
++ *       200:
++ *         description: Tags updated successfully
++ *       404:
++ *         description: Client not found
++ */
++router.patch("/:clientId/tags", (req: Request<{ clientId: string }, {}, { add?: string[]; remove?: string[] }>, res: Response) => {
++  const currentTags = new Set(mockClient.tags);
++
++  // Add new tags
++  if (req.body.add) {
++    for (const tag of req.body.add) {
++      currentTags.add(tag);
++    }
++  }
++
++  // Remove specified tags
++  if (req.body.remove) {
++    for (const tag of req.body.remove) {
++      currentTags.delete(tag);
++    }
++  }
++
++  const updatedTags = Array.from(currentTags);
++  res.json({
++    clientId: req.params.clientId,
++    tags: updatedTags,
++    added: req.body.add ?? [],
++    removed: req.body.remove ?? [],
++    message: "Tags updated successfully",
++  });
++});
++
+ /**
+  * @openapi
+  * /api/clients/{clientId}/policies:
+diff --git a/specs/express-openapi.json b/specs/express-openapi.json
+index 55261b7..6272702 100644
+--- a/specs/express-openapi.json
++++ b/specs/express-openapi.json
+@@ -56,6 +56,9 @@
+                     },
+                     "401": {
+                         "description": "Invalid credentials"
++                    },
++                    "423": {
++                        "description": "Account locked due to too many failed attempts"
+                     }
+                 }
+             }
+@@ -498,6 +501,59 @@
+                 }
+             }
+         },
++        "/api/clients/{clientId}/tags": {
++            "patch": {
++                "summary": "Bulk update tags on a client",
++                "description": "Add or remove multiple tags from a client in a single request. Supports add and remove operations.",
++                "tags": [
++                    "Clients"
++                ],
++                "parameters": [
++                    {
++                        "in": "path",
++                        "name": "clientId",
++                        "required": true,
++                        "schema": {
++                            "type": "string"
++                        }
++                    }
++                ],
++                "requestBody": {
++                    "required": true,
++                    "content": {
++                        "application/json": {
++                            "schema": {
++                                "type": "object",
++                                "properties": {
++                                    "add": {
++                                        "type": "array",
++                                        "items": {
++                                            "type": "string"
++                                        },
++                                        "description": "Tags to add to the client"
++                                    },
++                                    "remove": {
++                                        "type": "array",
++                                        "items": {
++                                            "type": "string"
++                                        },
++                                        "description": "Tags to remove from the client"
++                                    }
++                                }
++                            }
++                        }
++                    }
++                },
++                "responses": {
++                    "200": {
++                        "description": "Tags updated successfully"
++                    },
++                    "404": {
++                        "description": "Client not found"
++                    }
++                }
++            }
++        },
+         "/api/clients/{clientId}/policies": {
+             "post": {
+                 "summary": "Add a policy to a client",

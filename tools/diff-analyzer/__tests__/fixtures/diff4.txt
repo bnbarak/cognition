@@ -1,0 +1,89 @@
+diff --git a/java/src/main/java/com/insurecrm/email/model/EmailRequest.java b/java/src/main/java/com/insurecrm/email/model/EmailRequest.java
+index e8cf177..4bcd617 100644
+--- a/java/src/main/java/com/insurecrm/email/model/EmailRequest.java
++++ b/java/src/main/java/com/insurecrm/email/model/EmailRequest.java
+@@ -35,6 +35,12 @@ public class EmailRequest {
+     /** Policy ID this email relates to, if any */
+     private String policyId;
+ 
++    /** Email priority: low, normal, high, urgent */
++    private String priority = "normal";
++
++    /** File attachment references (list of attachment IDs from the file service) */
++    private List<String> attachmentIds;
++
+     // --- Getters and Setters ---
+ 
+     public List<String> getTo() { return to; }
+@@ -63,4 +69,10 @@ public class EmailRequest {
+ 
+     public String getPolicyId() { return policyId; }
+     public void setPolicyId(String policyId) { this.policyId = policyId; }
++
++    public String getPriority() { return priority; }
++    public void setPriority(String priority) { this.priority = priority; }
++
++    public List<String> getAttachmentIds() { return attachmentIds; }
++    public void setAttachmentIds(List<String> attachmentIds) { this.attachmentIds = attachmentIds; }
+ }
+diff --git a/java/src/main/java/com/insurecrm/email/model/EmailResponse.java b/java/src/main/java/com/insurecrm/email/model/EmailResponse.java
+index 6e43174..93df26e 100644
+--- a/java/src/main/java/com/insurecrm/email/model/EmailResponse.java
++++ b/java/src/main/java/com/insurecrm/email/model/EmailResponse.java
+@@ -11,6 +11,7 @@ public class EmailResponse {
+     private String message;
+     private String messageId;
+     private Instant timestamp;
++    private String deliveryEstimate;
+ 
+     public EmailResponse() {
+         this.timestamp = Instant.now();
+@@ -21,6 +22,7 @@ public class EmailResponse {
+         this.message = message;
+         this.messageId = messageId;
+         this.timestamp = Instant.now();
++        this.deliveryEstimate = "< 30 seconds";
+     }
+ 
+     // --- Getters and Setters ---
+@@ -36,4 +38,7 @@ public class EmailResponse {
+ 
+     public Instant getTimestamp() { return timestamp; }
+     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
++
++    public String getDeliveryEstimate() { return deliveryEstimate; }
++    public void setDeliveryEstimate(String deliveryEstimate) { this.deliveryEstimate = deliveryEstimate; }
+ }
+diff --git a/javascript/src/routes/clients.ts b/javascript/src/routes/clients.ts
+index c2b85e0..0d3b636 100644
+--- a/javascript/src/routes/clients.ts
++++ b/javascript/src/routes/clients.ts
+@@ -240,28 +240,6 @@ router.put("/:clientId", (req: Request<{ clientId: string }, Client, UpdateClien
+   res.json(updated);
+ });
+ 
+-/**
+- * @openapi
+- * /api/clients/{clientId}:
+- *   delete:
+- *     summary: Delete a client
+- *     tags: [Clients]
+- *     parameters:
+- *       - in: path
+- *         name: clientId
+- *         required: true
+- *         schema:
+- *           type: string
+- *     responses:
+- *       200:
+- *         description: Client deleted
+- *       404:
+- *         description: Client not found
+- */
+-router.delete("/:clientId", (req: Request<{ clientId: string }>, res: Response) => {
+-  res.json({ success: true, message: `Client ${req.params.clientId} deleted` });
+-});
+-
+ /**
+  * @openapi
+  * /api/clients/{clientId}/policies:
