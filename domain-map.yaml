@@ -1,0 +1,317 @@
+# Domain Mapping — InsureCRM
+# Maps source code files to documentation pages and OpenAPI specs.
+# See .agents/skills/update-domain-mapping/SKILL.md for rules on how to maintain this file.
+#
+# Last updated: 2026-04-01 (initial seed)
+
+# ─────────────────────────────────────────────
+# Documentation Pages
+# ─────────────────────────────────────────────
+pages:
+
+  # ── Index / Homepage ──────────────────────
+  # Cross-cutting page: lists all controllers, ports, and concerns.
+  # Update when a controller is added, removed, or renamed.
+
+  - doc: docs/docs/index.md
+    section: "System at a Glance"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: "Auth controller entry in the system table (base path, port, endpoint count)"
+      - file: javascript/src/routes/clients.ts
+        concern: "Clients controller entry in the system table (base path, port, endpoint count)"
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        concern: "Send Email controller entry in the system table (base path, port, endpoint count)"
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        concern: "Receive Email controller entry in the system table (base path, port, endpoint count)"
+
+  - doc: docs/docs/index.md
+    section: "Authentication Overview"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: "List of public vs authenticated endpoints"
+      - file: javascript/src/types/auth.ts
+        concern: "JWT token shape and role enum values"
+
+  # ── Product Overview ──────────────────────
+  # High-level feature descriptions. Update when a new feature area is added.
+
+  - doc: docs/docs/product.md
+    section: "Architecture"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: "Auth controller row in the Core API architecture table"
+      - file: javascript/src/routes/clients.ts
+        concern: "Clients controller row in the Core API architecture table"
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        concern: "Send Email controller row in the Email Service architecture table"
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        concern: "Receive Email controller row in the Email Service architecture table"
+
+  - doc: docs/docs/product.md
+    section: "Authentication & Access Control"
+    sources:
+      - file: javascript/src/types/auth.ts
+        concern: "Role definitions (admin, agent, viewer) and their descriptions"
+
+  # ── Authentication Guide ──────────────────
+  # Detailed JWT/RBAC reference page.
+
+  - doc: docs/docs/authentication.md
+    section: "Authentication Flow"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [14, 50]
+        concern: "Login endpoint — step 1-3 of the auth flow"
+      - file: javascript/src/routes/auth.ts
+        lines: [103, 135]
+        concern: "Refresh endpoint — step 6-7 of the auth flow"
+
+  - doc: docs/docs/authentication.md
+    section: "Token Format"
+    sources:
+      - file: javascript/src/types/auth.ts
+        concern: "AuthTokens interface defines accessToken, refreshToken, expiresIn"
+
+  - doc: docs/docs/authentication.md
+    section: "Roles & Permissions"
+    sources:
+      - file: javascript/src/types/auth.ts
+        concern: "RegisterRequest.role enum defines available roles"
+
+  - doc: docs/docs/authentication.md
+    section: "Error Responses"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: "Error codes returned by auth endpoints (401, 423, 409, 400)"
+
+  # ── Auth Controller API ───────────────────
+
+  - doc: docs/docs/api/auth-controller.md
+    section: "POST /api/auth/login"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [14, 50]
+        concern: "Login route handler and OpenAPI JSDoc annotation"
+      - file: javascript/src/types/auth.ts
+        concern: "LoginRequest and AuthResponse type definitions"
+
+  - doc: docs/docs/api/auth-controller.md
+    section: "POST /api/auth/register"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [52, 101]
+        concern: "Register route handler and OpenAPI JSDoc annotation"
+      - file: javascript/src/types/auth.ts
+        concern: "RegisterRequest and UserProfile type definitions"
+
+  - doc: docs/docs/api/auth-controller.md
+    section: "POST /api/auth/refresh"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [103, 135]
+        concern: "Refresh token route handler and OpenAPI JSDoc annotation"
+      - file: javascript/src/types/auth.ts
+        concern: "RefreshTokenRequest type definition"
+
+  - doc: docs/docs/api/auth-controller.md
+    section: "POST /api/auth/forgot-password"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [137, 165]
+        concern: "Forgot password route handler and OpenAPI JSDoc annotation"
+      - file: javascript/src/types/auth.ts
+        concern: "ForgotPasswordRequest type definition"
+
+  - doc: docs/docs/api/auth-controller.md
+    section: "POST /api/auth/reset-password"
+    sources:
+      - file: javascript/src/routes/auth.ts
+        lines: [167, 196]
+        concern: "Reset password route handler and OpenAPI JSDoc annotation"
+      - file: javascript/src/types/auth.ts
+        concern: "ResetPasswordRequest type definition"
+
+  # ── Clients Controller API ────────────────
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "GET /api/clients"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [47, 101]
+        concern: "List clients route handler with pagination/search/filter and OpenAPI JSDoc"
+      - file: javascript/src/types/client.ts
+        lines: [17, 36]
+        concern: "Client interface (response shape)"
+      - file: javascript/src/types/client.ts
+        lines: [74, 91]
+        concern: "ListClientsQuery and PaginatedClientsResponse interfaces"
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "GET /api/clients/{clientId}"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [103, 123]
+        concern: "Get single client route handler and OpenAPI JSDoc"
+      - file: javascript/src/types/client.ts
+        lines: [17, 36]
+        concern: "Client interface (response shape with policies)"
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "POST /api/clients"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [125, 187]
+        concern: "Create client route handler and OpenAPI JSDoc"
+      - file: javascript/src/types/client.ts
+        lines: [39, 54]
+        concern: "CreateClientRequest interface (request body shape)"
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "PUT /api/clients/{clientId}"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [189, 241]
+        concern: "Update client route handler and OpenAPI JSDoc"
+      - file: javascript/src/types/client.ts
+        lines: [57, 71]
+        concern: "UpdateClientRequest interface (partial update shape)"
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "DELETE /api/clients/{clientId}"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [243, 263]
+        concern: "Delete client route handler and OpenAPI JSDoc"
+
+  - doc: docs/docs/api/clients-controller.md
+    section: "POST /api/clients/{clientId}/policies"
+    sources:
+      - file: javascript/src/routes/clients.ts
+        lines: [265, 313]
+        concern: "Add policy route handler and OpenAPI JSDoc"
+      - file: javascript/src/types/client.ts
+        lines: [1, 14]
+        concern: "PolicyType enum and Policy interface"
+      - file: javascript/src/types/client.ts
+        lines: [94, 101]
+        concern: "AddPolicyRequest interface"
+
+  # ── Send Email Controller API ─────────────
+
+  - doc: docs/docs/api/send-email-controller.md
+    section: "POST /api/emails/send"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        lines: [29, 38]
+        concern: "Send single email endpoint handler and Swagger annotations"
+      - file: java/src/main/java/com/insurecrm/email/model/EmailRequest.java
+        concern: "EmailRequest DTO (request body shape)"
+      - file: java/src/main/java/com/insurecrm/email/model/EmailResponse.java
+        concern: "EmailResponse DTO (response shape)"
+
+  - doc: docs/docs/api/send-email-controller.md
+    section: "POST /api/emails/send/bulk"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        lines: [40, 51]
+        concern: "Bulk email endpoint handler and Swagger annotations"
+      - file: java/src/main/java/com/insurecrm/email/model/EmailRequest.java
+        concern: "EmailRequest DTO (reused for bulk array items)"
+
+  - doc: docs/docs/api/send-email-controller.md
+    section: "POST /api/emails/send/template/{templateId}"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        lines: [53, 67]
+        concern: "Template email endpoint handler and Swagger annotations"
+
+  - doc: docs/docs/api/send-email-controller.md
+    section: "GET /api/emails/send/status/{messageId}"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        lines: [69, 80]
+        concern: "Email delivery status endpoint handler"
+
+  - doc: docs/docs/api/send-email-controller.md
+    section: "GET /api/emails/send/history"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        lines: [82, 104]
+        concern: "Sent email history endpoint handler with pagination and filters"
+
+  # ── Receive Email Controller API ──────────
+
+  - doc: docs/docs/api/receive-email-controller.md
+    section: "GET /api/emails/inbox"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        lines: [39, 56]
+        concern: "List inbox emails endpoint handler with pagination and filters"
+      - file: java/src/main/java/com/insurecrm/email/model/ReceivedEmail.java
+        concern: "ReceivedEmail model (response shape)"
+
+  - doc: docs/docs/api/receive-email-controller.md
+    section: "GET /api/emails/inbox/{emailId}"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        lines: [58, 66]
+        concern: "Get single email endpoint handler (auto-marks as read)"
+
+  - doc: docs/docs/api/receive-email-controller.md
+    section: "PATCH /api/emails/inbox/{emailId}/read"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        lines: [68, 79]
+        concern: "Toggle read/unread status endpoint handler"
+
+  - doc: docs/docs/api/receive-email-controller.md
+    section: "POST /api/emails/inbox/{emailId}/link"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        lines: [81, 92]
+        concern: "Manual client linking endpoint handler"
+
+  - doc: docs/docs/api/receive-email-controller.md
+    section: "DELETE /api/emails/inbox/{emailId}"
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        lines: [94, 102]
+        concern: "Delete email endpoint handler (admin only)"
+
+# ─────────────────────────────────────────────
+# OpenAPI Specs
+# ─────────────────────────────────────────────
+specs:
+
+  - spec: specs/express-openapi.json
+    generator: scripts/generate-openapi-specs.sh
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: "Auth endpoints — JSDoc @openapi annotations define the spec"
+      - file: javascript/src/routes/clients.ts
+        concern: "Client endpoints — JSDoc @openapi annotations define the spec"
+      - file: javascript/src/types/auth.ts
+        concern: "Auth request/response types referenced by OpenAPI schemas"
+      - file: javascript/src/types/client.ts
+        concern: "Client/Policy types referenced by OpenAPI schemas"
+
+  - spec: specs/springboot-openapi.json
+    generator: scripts/generate-openapi-specs.sh
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        concern: "Send Email endpoints — @Operation/@ApiResponse Swagger annotations"
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        concern: "Receive Email endpoints — @Operation/@Tag Swagger annotations"
+      - file: java/src/main/java/com/insurecrm/email/model/EmailRequest.java
+        concern: "EmailRequest DTO — @Schema annotations for request body spec"
+      - file: java/src/main/java/com/insurecrm/email/model/EmailResponse.java
+        concern: "EmailResponse DTO — @Schema annotations for response spec"
+      - file: java/src/main/java/com/insurecrm/email/model/ReceivedEmail.java
+        concern: "ReceivedEmail model — @Schema annotations for inbox response spec"
+
+# ─────────────────────────────────────────────
+# MkDocs Config
+# ─────────────────────────────────────────────
+# When a new doc page is added, it must also be registered in mkdocs.yml nav.
+mkdocs_config: docs/mkdocs.yml
