@@ -3,6 +3,9 @@ package com.insurecrm.email.controller;
 import com.insurecrm.email.model.EmailRequest;
 import com.insurecrm.email.model.EmailResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,8 @@ public class SendEmailController {
     @PostMapping
     @Operation(summary = "Send a single email",
                description = "Compose and send an email to one or more recipients. Optionally link to a client or policy record.")
+    @ApiResponse(responseCode = "202", description = "Email accepted for delivery",
+                 content = @Content(schema = @Schema(implementation = EmailResponse.class)))
     public ResponseEntity<EmailResponse> sendEmail(@Valid @RequestBody EmailRequest request) {
         String messageId = "msg_" + UUID.randomUUID().toString().substring(0, 8);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -35,6 +40,8 @@ public class SendEmailController {
     @PostMapping("/bulk")
     @Operation(summary = "Send bulk emails",
                description = "Send the same email to multiple clients. Useful for policy renewal reminders or agency announcements.")
+    @ApiResponse(responseCode = "202", description = "Bulk emails accepted for delivery",
+                 content = @Content(schema = @Schema(implementation = EmailResponse.class)))
     public ResponseEntity<EmailResponse> sendBulkEmails(@Valid @RequestBody List<EmailRequest> requests) {
         String batchId = "batch_" + UUID.randomUUID().toString().substring(0, 8);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -46,6 +53,8 @@ public class SendEmailController {
     @PostMapping("/template/{templateId}")
     @Operation(summary = "Send an email using a CRM template",
                description = "Send an email using a pre-defined template (e.g. welcome, renewal reminder, claim update). Template variables are resolved from the linked client/policy.")
+    @ApiResponse(responseCode = "202", description = "Template email accepted for delivery",
+                 content = @Content(schema = @Schema(implementation = EmailResponse.class)))
     public ResponseEntity<EmailResponse> sendTemplateEmail(
             @PathVariable String templateId,
             @RequestParam String clientId,
