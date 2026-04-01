@@ -1,0 +1,30 @@
+site_name: InsureCRM Documentation
+site_description: Documentation for InsureCRM — a CRM platform for insurance agencies
+site_url: https://insurecrm.example.com/docs
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: teal
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Product Overview: product.md
+  - API Reference:
+      - Auth Controller (TypeScript): api/auth-controller.md
+      - Clients Controller (TypeScript): api/clients-controller.md
+      - Send Email Controller (Java): api/send-email-controller.md
+      - Receive Email Controller (Java): api/receive-email-controller.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables

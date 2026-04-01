@@ -1,0 +1,28 @@
+{
+  "name": "insurecrm-api",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "ts-node src/app.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["crm", "insurance"],
+  "author": "",
+  "license": "ISC",
+  "description": "InsureCRM - REST API for insurance agency CRM",
+  "dependencies": {
+    "express": "^5.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
+}
