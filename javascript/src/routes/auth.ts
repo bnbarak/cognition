@@ -11,6 +11,11 @@ import type {
 
 const router = Router();
 
+/** In-memory rate limiter for login attempts */
+const loginAttempts: Map<string, { count: number; lockedUntil: number | null }> = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 /**
  * @openapi
  * /api/auth/login:
@@ -35,9 +40,27 @@ const router = Router();
  *         description: Successfully authenticated
  *       401:
  *         description: Invalid credentials
+ *       423:
+ *         description: Account locked due to too many failed attempts
  */
 router.post("/login", (req: Request<{}, AuthResponse, LoginRequest>, res: Response<AuthResponse>) => {
   const { email } = req.body;
+
+  // Rate limiting check
+  const attempts = loginAttempts.get(email);
+  if (attempts?.lockedUntil && Date.now() < attempts.lockedUntil) {
+    const remainingMs = attempts.lockedUntil - Date.now();
+    const remainingMin = Math.ceil(remainingMs / 60000);
+    res.status(423).json({
+      success: false,
+      message: `Account locked. Try again in ${remainingMin} minute(s).`,
+    });
+    return;
+  }
+
+  // Reset attempts on successful login (mock: always succeeds)
+  loginAttempts.set(email, { count: 0, lockedUntil: null });
+
   res.json({
     success: true,
     message: "Login successful",
@@ -85,6 +108,7 @@ router.post("/login", (req: Request<{}, AuthResponse, LoginRequest>, res: Respon
  */
 router.post("/register", (req: Request<{}, AuthResponse & { user?: UserProfile }, RegisterRequest>, res: Response) => {
   const { email, firstName, lastName, agencyName, role } = req.body;
+  const agencyId = "agency_" + Math.random().toString(36).substring(2, 10);
   res.status(201).json({
     success: true,
     message: "Registration successful",
@@ -94,6 +118,7 @@ router.post("/register", (req: Request<{}, AuthResponse & { user?: UserProfile }
       firstName,
       lastName,
       agencyName,
+      agencyId,
       role,
       createdAt: new Date().toISOString(),
     },
