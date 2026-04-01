@@ -40,8 +40,8 @@
                     "required": true
                 },
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Email accepted for delivery",
                         "content": {
                             "*/*": {
                                 "schema": {
@@ -88,8 +88,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Template email accepted for delivery",
                         "content": {
                             "*/*": {
                                 "schema": {
@@ -123,8 +123,8 @@
                     "required": true
                 },
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Bulk emails accepted for delivery",
                         "content": {
                             "*/*": {
                                 "schema": {
