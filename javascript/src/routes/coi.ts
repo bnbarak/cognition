@@ -180,7 +180,7 @@ router.post("/generate", (req: Request<{}, COIResponse, GenerateCOIRequest>, res
   const request = req.body;
 
   // Validate required fields
-  if (!request.clientId || !request.insuredName || !request.coverageLines?.length) {
+  if (!request.clientId || !request.insuredName || !request.coverageLines?.length || !request.certificateHolder) {
     res.status(400).json({
       success: false,
       message: "Missing required fields: clientId, insuredName, and at least one coverageLine are required",
