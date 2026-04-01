@@ -1,0 +1,19 @@
+# Node
+javascript/node_modules/
+javascript/dist/
+
+# Java
+java/target/
+
+# MkDocs
+docs/site/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
