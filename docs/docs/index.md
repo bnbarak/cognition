@@ -115,7 +115,7 @@ mvn spring-boot:run
 
 ```bash
 cd docs
-pip install mkdocs mkdocs-material
+pip install mkdocs mkdocs-shadcn
 mkdocs serve
 # Docs: http://localhost:8000
 ```

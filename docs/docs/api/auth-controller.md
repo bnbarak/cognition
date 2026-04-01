@@ -3,7 +3,7 @@
 **Service:** Core API (TypeScript / Express)
 **Base path:** `/api/auth`
 **Source:** `javascript/src/routes/auth.ts`
-**Auth required:** No (login, register, forgot-password) | Yes (refresh, reset-password)
+**Auth required:** No (login, forgot-password) | Yes (register — admin only, refresh, reset-password)
 
 Handles user authentication and account management. See the [Authentication Guide](../authentication.md) for JWT details, roles, and test credentials.
 
