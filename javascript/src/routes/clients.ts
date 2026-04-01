@@ -242,28 +242,6 @@ router.put("/:clientId", (req: Request<{ clientId: string }, Client, UpdateClien
 
 /**
  * @openapi
- * /api/clients/{clientId}:
- *   delete:
- *     summary: Delete a client
- *     tags: [Clients]
- *     parameters:
- *       - in: path
- *         name: clientId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Client deleted
- *       404:
- *         description: Client not found
- */
-router.delete("/:clientId", (req: Request<{ clientId: string }>, res: Response) => {
-  res.json({ success: true, message: `Client ${req.params.clientId} deleted` });
-});
-
-/**
- * @openapi
  * /api/clients/{clientId}/policies:
  *   post:
  *     summary: Add a policy to a client
