@@ -1,6 +1,6 @@
 # Authentication Guide
 
-InsureCRM uses **JWT-based authentication** with role-based access control (RBAC). All API requests (except login and register) must include a valid access token.
+InsureCRM uses **JWT-based authentication** with role-based access control (RBAC). All API requests (except login, forgot-password, and reset-password) must include a valid access token. The register endpoint requires admin-level authentication.
 
 ---
 

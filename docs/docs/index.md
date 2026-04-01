@@ -69,7 +69,7 @@ See: [Receive Email Controller API](api/receive-email-controller.md)
 
 ## Authentication Overview
 
-All API endpoints (except login and register) require a valid JWT in the `Authorization` header:
+All API endpoints (except login, forgot-password, and reset-password) require a valid JWT in the `Authorization` header. Note that register requires admin-level authentication.
 
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
