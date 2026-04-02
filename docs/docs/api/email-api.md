@@ -16,4 +16,4 @@ The Email API handles sending and receiving emails for InsureCRM, providing outb
 
 ## API Reference
 
-::OAD(./specs/springboot-openapi.json)
+::OAD(../specs/springboot-openapi.json)

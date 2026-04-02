@@ -231,7 +231,7 @@ Brief description of the controller's purpose.
 
 ## API Reference
 
-::OAD(./specs/<spec-file>.json)
+::OAD(../specs/<spec-file>.json)
 ```
 
 **Do NOT hand-write endpoint tables, request/response examples, or schema details.** The OAD plugin generates all of this from the spec. Your job is to keep the annotations accurate so the generated spec is correct.

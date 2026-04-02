@@ -22,4 +22,4 @@ See the [Authentication Guide](../authentication.md) for JWT details, roles, and
 
 ## API Reference
 
-::OAD(./specs/express-openapi.json)
+::OAD(../specs/express-openapi.json)

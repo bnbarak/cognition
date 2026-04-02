@@ -6,7 +6,7 @@ Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platfor
 
 ## System at a Glance
 
-InsureCRM is composed of **two backend services** and **four controllers**, each handling a distinct concern:
+InsureCRM is composed of **two backend services** and **five controllers**, each handling a distinct concern:
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
