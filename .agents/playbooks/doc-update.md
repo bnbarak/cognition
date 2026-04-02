@@ -65,7 +65,7 @@ For each remaining file, look it up in `docs/domain-map.yaml`:
 1. Find all `pages[].sources[].file` and `specs[].sources[].file` entries that match the file path
 2. Group files by the `doc` page they map to — files mapping to the same doc page belong to the same **concern-group**
 3. If a file maps to multiple doc pages, it appears in EACH group
-4. If a file is NOT in `domain-map.yaml`:
+4. If a file is NOT in `docs/domain-map.yaml`:
    - If it's a NEW route/controller file → create a new group named after the file (this is a new feature)
    - If it's a type/model file → try to associate it with an existing group by directory proximity
    - Otherwise → place in an "unmapped" group
@@ -89,7 +89,7 @@ DECISION TREE (per concern-group)
 ├─ Do any NEW files exist with classification "route" in this group?
 │  YES → VERDICT: NEW_FEATURE
 │        Confidence: LOW
-│        Action: Create new doc page, update index.md, update spec, update domain-map.yaml
+│        Action: Create new doc page, update index.md, update spec, update docs/domain-map.yaml
 │
 ├─ Are ALL files in this group classified as "config"?
 │  YES → VERDICT: CONFIG_ONLY

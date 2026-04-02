@@ -77,7 +77,7 @@ Handles identity, client data, and policy management.
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
 | [Auth Controller](api/auth-controller.md) | 5 | Login, register, token refresh, password reset |
-| [Clients Controller](api/clients-controller.md) | 5 | Client CRUD, policy attachment, search/filter |
+| [Clients Controller](api/clients-controller.md) | 6 | Client management, policy attachment, tag management, search/filter |
 
 ### Email Service (Java / Spring Boot — port 8080)
 
