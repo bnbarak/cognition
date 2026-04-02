@@ -1,0 +1,879 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "InsureCRM API",
+        "version": "1.0.0",
+        "description": "REST API for InsureCRM \u2014 a CRM platform for insurance agencies. Manages authentication, client records, and policy tracking."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Authentication and user management"
+        },
+        {
+            "name": "Clients",
+            "description": "Client and policy management"
+        },
+        {
+            "name": "Certificates",
+            "description": "Certificate of Insurance (COI) generation and management"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "summary": "Authenticate an agency user",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "423": {
+                        "description": "Account locked due to too many failed attempts"
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "summary": "Register a new agency user",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "firstName",
+                                    "lastName",
+                                    "agencyName",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "agencyName": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "agent",
+                                            "viewer"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully"
+                    },
+                    "409": {
+                        "description": "Email already in use"
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "summary": "Refresh an expired access token",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "refreshToken"
+                                ],
+                                "properties": {
+                                    "refreshToken": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully"
+                    },
+                    "401": {
+                        "description": "Invalid or expired refresh token"
+                    }
+                }
+            }
+        },
+        "/api/auth/forgot-password": {
+            "post": {
+                "summary": "Request a password reset email",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent"
+                    },
+                    "404": {
+                        "description": "Email not found"
+                    }
+                }
+            }
+        },
+        "/api/auth/reset-password": {
+            "post": {
+                "summary": "Reset password using a token from email",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "token",
+                                    "newPassword"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    },
+                                    "newPassword": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully"
+                    },
+                    "400": {
+                        "description": "Invalid or expired token"
+                    }
+                }
+            }
+        },
+        "/api/clients": {
+            "get": {
+                "summary": "List all clients with pagination, search, and filtering",
+                "tags": [
+                    "Clients"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search by name, email, or phone"
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignedAgentId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortBy",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "firstName",
+                                "lastName",
+                                "createdAt",
+                                "updatedAt"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortOrder",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of clients"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new client",
+                "tags": [
+                    "Clients"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "firstName",
+                                    "lastName",
+                                    "email",
+                                    "phone",
+                                    "address",
+                                    "dateOfBirth",
+                                    "assignedAgentId"
+                                ],
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "dateOfBirth": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "assignedAgentId": {
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Client created"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/clients/{clientId}": {
+            "get": {
+                "summary": "Get a single client by ID",
+                "tags": [
+                    "Clients"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "clientId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client details"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update an existing client",
+                "tags": [
+                    "Clients"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "clientId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "object"
+                                    },
+                                    "assignedAgentId": {
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Client updated"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/clients/{clientId}/tags": {
+            "patch": {
+                "summary": "Bulk update tags on a client",
+                "description": "Add or remove multiple tags from a client in a single request. Supports add and remove operations.",
+                "tags": [
+                    "Clients"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "clientId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "add": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Tags to add to the client"
+                                    },
+                                    "remove": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Tags to remove from the client"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tags updated successfully"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/clients/{clientId}/policies": {
+            "post": {
+                "summary": "Add a policy to a client",
+                "tags": [
+                    "Clients"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "clientId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "type",
+                                    "provider",
+                                    "policyNumber",
+                                    "premiumAmount",
+                                    "startDate",
+                                    "endDate"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "auto",
+                                            "home",
+                                            "life",
+                                            "health",
+                                            "commercial"
+                                        ]
+                                    },
+                                    "provider": {
+                                        "type": "string"
+                                    },
+                                    "policyNumber": {
+                                        "type": "string"
+                                    },
+                                    "premiumAmount": {
+                                        "type": "number"
+                                    },
+                                    "startDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Policy added to client"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/coi/generate": {
+            "post": {
+                "summary": "Generate a Certificate of Insurance",
+                "description": "Takes policy and coverage data and generates a COI JSON document. Validates coverage limits meet minimum requirements per line type.",
+                "tags": [
+                    "Certificates"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "clientId",
+                                    "insuredName",
+                                    "insuredAddress",
+                                    "coverageLines",
+                                    "certificateHolder"
+                                ],
+                                "properties": {
+                                    "clientId": {
+                                        "type": "string"
+                                    },
+                                    "insuredName": {
+                                        "type": "string"
+                                    },
+                                    "insuredAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "coverageLines": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "general_liability",
+                                                        "auto_liability",
+                                                        "umbrella",
+                                                        "workers_comp",
+                                                        "professional_liability"
+                                                    ]
+                                                },
+                                                "policyNumber": {
+                                                    "type": "string"
+                                                },
+                                                "carrier": {
+                                                    "type": "string"
+                                                },
+                                                "effectiveDate": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "expirationDate": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "limits": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "additionalInsureds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "waiverOfSubrogation": {
+                                        "type": "object"
+                                    },
+                                    "certificateHolder": {
+                                        "type": "object"
+                                    },
+                                    "descriptionOfOperations": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Certificate generated successfully"
+                    },
+                    "400": {
+                        "description": "Validation error (missing fields or coverage limits below minimums)"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/coi": {
+            "get": {
+                "summary": "List all generated certificates",
+                "description": "Returns a paginated list of all COI summaries. Supports filtering by client ID and status.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "clientId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by client ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "expired",
+                                "revoked"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of certificate summaries"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}": {
+            "get": {
+                "summary": "Get a certificate by number",
+                "description": "Returns the full COI document for a given certificate number.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full certificate details"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}/revoke": {
+            "post": {
+                "summary": "Revoke a certificate",
+                "description": "Marks a certificate as revoked. Revoked certificates cannot be reinstated.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "description": "Reason for revocation"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Certificate revoked"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
+                    },
+                    "409": {
+                        "description": "Certificate already revoked"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}/verify": {
+            "get": {
+                "summary": "Verify a certificate is valid",
+                "description": "Public endpoint to verify whether a certificate is currently active and valid. Does not require authentication.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Verification result"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {}
+}

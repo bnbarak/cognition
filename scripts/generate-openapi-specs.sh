@@ -9,13 +9,13 @@
 #   ./scripts/generate-openapi-specs.sh
 #
 # Output:
-#   specs/express-openapi.json
-#   specs/springboot-openapi.json
+#   docs/docs/specs/express-openapi.json
+#   docs/docs/specs/springboot-openapi.json
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SPECS_DIR="$REPO_ROOT/specs"
+SPECS_DIR="$REPO_ROOT/docs/docs/specs"
 mkdir -p "$SPECS_DIR"
 
 EXPRESS_PORT=3000
@@ -74,10 +74,10 @@ echo ""
 echo "Fetching OpenAPI specs..."
 
 curl -sf "http://localhost:$EXPRESS_PORT/openapi.json" | python3 -m json.tool > "$SPECS_DIR/express-openapi.json"
-echo "  Saved Express spec to specs/express-openapi.json"
+echo "  Saved Express spec to docs/docs/specs/express-openapi.json"
 
 curl -sf "http://localhost:$SPRINGBOOT_PORT/api-docs" | python3 -m json.tool > "$SPECS_DIR/springboot-openapi.json"
-echo "  Saved Spring Boot spec to specs/springboot-openapi.json"
+echo "  Saved Spring Boot spec to docs/docs/specs/springboot-openapi.json"
 
 echo ""
 echo "Done! OpenAPI specs saved to $SPECS_DIR/"

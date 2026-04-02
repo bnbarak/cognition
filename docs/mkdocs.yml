@@ -5,20 +5,23 @@ site_url: https://insurecrm.example.com/docs
 theme:
   name: shadcn
 
+plugins:
+  - search
+  - neoteroi.mkdocsoad:
+      use_pymdownx: true
+
 nav:
   - Home: index.md
   - Product Overview: product.md
   - Authentication: authentication.md
   - API Reference:
-      - Auth Controller (TypeScript): api/auth-controller.md
-      - Clients Controller (TypeScript): api/clients-controller.md
-      - Send Email Controller (Java): api/send-email-controller.md
-      - Receive Email Controller (Java): api/receive-email-controller.md
+      - Core API (TypeScript): api/core-api.md
+      - Email API (Java): api/email-api.md
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
-  - pymdownx.blocks.details
   - tables

@@ -76,8 +76,9 @@ Handles identity, client data, and policy management.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| [Auth Controller](api/auth-controller.md) | 5 | Login, register, token refresh, password reset |
-| [Clients Controller](api/clients-controller.md) | 6 | Client management, policy attachment, tag management, search/filter |
+| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+
+See: [Core API Reference](api/core-api.md)
 
 ### Email Service (Java / Spring Boot — port 8080)
 
@@ -85,8 +86,9 @@ Handles all email operations — both outbound and inbound.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| [Send Email Controller](api/send-email-controller.md) | 5 | Send, bulk send, templates, delivery status, history |
-| [Receive Email Controller](api/receive-email-controller.md) | 5 | Inbox listing, read status, client linking, deletion |
+| Send Email, Receive Email | 10 | Send, bulk send, templates, delivery status, inbox, client matching |
+
+See: [Email API Reference](api/email-api.md)
 
 Both services expose **OpenAPI/Swagger** specs for integration and client generation.
 
