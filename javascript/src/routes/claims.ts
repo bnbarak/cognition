@@ -171,7 +171,7 @@ router.patch("/:claimNumber/status", (req: Request<{ claimNumber: string }, {}, 
     return;
   }
 
-  if (newStatus === "approved" && req.body.approvedAmount) {
+  if (newStatus === "approved" && req.body.approvedAmount != null) {
     claim.approvedAmount = req.body.approvedAmount;
   }
 
