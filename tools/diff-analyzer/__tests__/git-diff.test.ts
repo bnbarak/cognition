@@ -1,53 +1,64 @@
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { resolvePRBranch, fetchBranch, findMergeBase, generateDiff } from "../src/git-diff";
 
-// Mock child_process.execSync
 jest.mock("child_process", () => ({
-  execSync: jest.fn(),
+  execFileSync: jest.fn(),
 }));
 
-const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;
+const mockExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
 
 beforeEach(() => {
-  mockExecSync.mockReset();
+  mockExecFileSync.mockReset();
 });
 
 describe("resolvePRBranch", () => {
   it("fetches PR ref when ls-remote finds a match", () => {
-    mockExecSync
-      .mockReturnValueOnce("abc123\trefs/pull/5/head\n") // ls-remote
-      .mockReturnValueOnce(""); // fetch
+    mockExecFileSync
+      .mockReturnValueOnce("abc123\trefs/pull/5/head\n")
+      .mockReturnValueOnce("");
 
     const result = resolvePRBranch(5, "/repo");
 
     expect(result).toBe("refs/pr/5");
-    expect(mockExecSync).toHaveBeenCalledTimes(2);
-    expect(mockExecSync).toHaveBeenCalledWith(
-      'git ls-remote --refs origin "pull/5/head"',
+    expect(mockExecFileSync).toHaveBeenCalledTimes(2);
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["ls-remote", "--refs", "origin", "pull/5/head"],
       expect.objectContaining({ cwd: "/repo" })
     );
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git fetch origin pull/5/head:refs/pr/5",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["fetch", "origin", "pull/5/head:refs/pr/5"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
 
   it("falls back to searching remote branches when ls-remote returns empty", () => {
-    mockExecSync
-      .mockReturnValueOnce("") // ls-remote returns nothing
+    mockExecFileSync
+      .mockReturnValueOnce("")
       .mockReturnValueOnce(
         "  origin/main\n  origin/devin/pr-5-feature\n  origin/other\n"
-      ); // branch -r
+      );
 
     const result = resolvePRBranch(5, "/repo");
 
     expect(result).toBe("devin/pr-5-feature");
   });
 
+  it("does not match substring PR numbers in fallback", () => {
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce(
+        "  origin/main\n  origin/devin/pr-50-feature\n  origin/other\n"
+      );
+
+    expect(() => resolvePRBranch(5, "/repo")).toThrow(
+      "Could not resolve PR #5 to a branch"
+    );
+  });
+
   it("throws when PR cannot be resolved", () => {
-    mockExecSync
-      .mockReturnValueOnce("") // ls-remote returns nothing
-      .mockReturnValueOnce("  origin/main\n  origin/feature\n"); // no matching branch
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("  origin/main\n  origin/feature\n");
 
     expect(() => resolvePRBranch(99, "/repo")).toThrow(
       "Could not resolve PR #99 to a branch"
@@ -57,12 +68,12 @@ describe("resolvePRBranch", () => {
 
 describe("fetchBranch", () => {
   it("fetches a regular branch from origin", () => {
-    mockExecSync.mockReturnValueOnce("");
+    mockExecFileSync.mockReturnValueOnce("");
 
     fetchBranch("feature-branch", "/repo");
 
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git fetch origin feature-branch",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["fetch", "origin", "feature-branch"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
@@ -70,11 +81,11 @@ describe("fetchBranch", () => {
   it("skips fetch for refs/ prefixed branches", () => {
     fetchBranch("refs/pr/5", "/repo");
 
-    expect(mockExecSync).not.toHaveBeenCalled();
+    expect(mockExecFileSync).not.toHaveBeenCalled();
   });
 
   it("does not throw when fetch fails (branch might be local)", () => {
-    mockExecSync.mockImplementationOnce(() => {
+    mockExecFileSync.mockImplementationOnce(() => {
       throw new Error("fatal: couldn't find remote ref");
     });
 
@@ -84,19 +95,19 @@ describe("fetchBranch", () => {
 
 describe("findMergeBase", () => {
   it("finds merge-base using origin/ prefix on base", () => {
-    mockExecSync.mockReturnValueOnce("abc123def\n");
+    mockExecFileSync.mockReturnValueOnce("abc123def\n");
 
     const result = findMergeBase("main", "refs/pr/5", "/repo");
 
     expect(result).toBe("abc123def");
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git merge-base origin/main refs/pr/5",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["merge-base", "origin/main", "refs/pr/5"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
 
   it("falls back to no-prefix when origin/ fails", () => {
-    mockExecSync
+    mockExecFileSync
       .mockImplementationOnce(() => {
         throw new Error("fatal: not a valid object");
       })
@@ -105,9 +116,9 @@ describe("findMergeBase", () => {
     const result = findMergeBase("main", "feature", "/repo");
 
     expect(result).toBe("def456");
-    expect(mockExecSync).toHaveBeenCalledTimes(2);
-    expect(mockExecSync).toHaveBeenLastCalledWith(
-      "git merge-base main feature",
+    expect(mockExecFileSync).toHaveBeenCalledTimes(2);
+    expect(mockExecFileSync).toHaveBeenLastCalledWith(
+      "git", ["merge-base", "main", "feature"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
@@ -115,34 +126,34 @@ describe("findMergeBase", () => {
 
 describe("generateDiff", () => {
   it("generates diff from a branch name", () => {
-    mockExecSync
-      .mockReturnValueOnce("") // fetchBranch (head)
-      .mockReturnValueOnce("") // fetchBranch (base)
-      .mockReturnValueOnce("abc123\n") // merge-base
-      .mockReturnValueOnce("diff --git a/file.ts b/file.ts\n+added line\n"); // git diff
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("abc123\n")
+      .mockReturnValueOnce("diff --git a/file.ts b/file.ts\n+added line\n");
 
     const result = generateDiff({ branch: "feature", base: "main", cwd: "/repo" });
 
     expect(result).toContain("diff --git");
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git diff abc123 origin/feature",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["diff", "abc123", "origin/feature"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
 
   it("generates diff from a PR number", () => {
-    mockExecSync
-      .mockReturnValueOnce("abc123\trefs/pull/5/head\n") // ls-remote
-      .mockReturnValueOnce("") // fetch PR ref
-      .mockReturnValueOnce("") // fetchBranch (base)
-      .mockReturnValueOnce("merge123\n") // merge-base
-      .mockReturnValueOnce("diff --git a/route.ts b/route.ts\n+new endpoint\n"); // git diff
+    mockExecFileSync
+      .mockReturnValueOnce("abc123\trefs/pull/5/head\n")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("merge123\n")
+      .mockReturnValueOnce("diff --git a/route.ts b/route.ts\n+new endpoint\n");
 
     const result = generateDiff({ pr: 5, base: "main", cwd: "/repo" });
 
     expect(result).toContain("diff --git");
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git diff merge123 refs/pr/5",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["diff", "merge123", "refs/pr/5"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
@@ -154,11 +165,11 @@ describe("generateDiff", () => {
   });
 
   it("throws when diff is empty", () => {
-    mockExecSync
-      .mockReturnValueOnce("") // fetchBranch (head)
-      .mockReturnValueOnce("") // fetchBranch (base)
-      .mockReturnValueOnce("abc123\n") // merge-base
-      .mockReturnValueOnce(""); // empty diff
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("abc123\n")
+      .mockReturnValueOnce("");
 
     expect(() =>
       generateDiff({ branch: "feature", base: "main", cwd: "/repo" })
@@ -166,33 +177,33 @@ describe("generateDiff", () => {
   });
 
   it("uses 'main' as default base branch", () => {
-    mockExecSync
-      .mockReturnValueOnce("") // fetchBranch (head)
-      .mockReturnValueOnce("") // fetchBranch (base)
-      .mockReturnValueOnce("abc123\n") // merge-base
-      .mockReturnValueOnce("diff --git a/f.ts b/f.ts\n"); // diff
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("abc123\n")
+      .mockReturnValueOnce("diff --git a/f.ts b/f.ts\n");
 
     generateDiff({ branch: "feature", cwd: "/repo" });
 
-    // Check that merge-base used origin/main
-    expect(mockExecSync).toHaveBeenCalledWith(
-      "git merge-base origin/main origin/feature",
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git", ["merge-base", "origin/main", "origin/feature"],
       expect.objectContaining({ cwd: "/repo" })
     );
   });
 
   it("uses cwd as default working directory", () => {
     const originalCwd = process.cwd();
-    mockExecSync
-      .mockReturnValueOnce("") // fetchBranch (head)
-      .mockReturnValueOnce("") // fetchBranch (base)
-      .mockReturnValueOnce("abc123\n") // merge-base
-      .mockReturnValueOnce("diff --git a/f.ts b/f.ts\n"); // diff
+    mockExecFileSync
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("abc123\n")
+      .mockReturnValueOnce("diff --git a/f.ts b/f.ts\n");
 
     generateDiff({ branch: "feature" });
 
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.any(String),
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      "git",
+      expect.any(Array),
       expect.objectContaining({ cwd: originalCwd })
     );
   });
