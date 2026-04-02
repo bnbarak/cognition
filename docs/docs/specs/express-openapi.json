@@ -18,6 +18,10 @@
         {
             "name": "Clients",
             "description": "Client and policy management"
+        },
+        {
+            "name": "Certificates",
+            "description": "Certificate of Insurance (COI) generation and management"
         }
     ],
     "paths": {
@@ -475,30 +479,6 @@
                         "description": "Client not found"
                     }
                 }
-            },
-            "delete": {
-                "summary": "Delete a client",
-                "tags": [
-                    "Clients"
-                ],
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "clientId",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Client deleted"
-                    },
-                    "404": {
-                        "description": "Client not found"
-                    }
-                }
             }
         },
         "/api/clients/{clientId}/tags": {
@@ -623,6 +603,273 @@
                     },
                     "404": {
                         "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/coi/generate": {
+            "post": {
+                "summary": "Generate a Certificate of Insurance",
+                "description": "Takes policy and coverage data and generates a COI JSON document. Validates coverage limits meet minimum requirements per line type.",
+                "tags": [
+                    "Certificates"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "clientId",
+                                    "insuredName",
+                                    "insuredAddress",
+                                    "coverageLines",
+                                    "certificateHolder"
+                                ],
+                                "properties": {
+                                    "clientId": {
+                                        "type": "string"
+                                    },
+                                    "insuredName": {
+                                        "type": "string"
+                                    },
+                                    "insuredAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "coverageLines": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "general_liability",
+                                                        "auto_liability",
+                                                        "umbrella",
+                                                        "workers_comp",
+                                                        "professional_liability"
+                                                    ]
+                                                },
+                                                "policyNumber": {
+                                                    "type": "string"
+                                                },
+                                                "carrier": {
+                                                    "type": "string"
+                                                },
+                                                "effectiveDate": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "expirationDate": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "limits": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "additionalInsureds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "waiverOfSubrogation": {
+                                        "type": "object"
+                                    },
+                                    "certificateHolder": {
+                                        "type": "object"
+                                    },
+                                    "descriptionOfOperations": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Certificate generated successfully"
+                    },
+                    "400": {
+                        "description": "Validation error (missing fields or coverage limits below minimums)"
+                    },
+                    "404": {
+                        "description": "Client not found"
+                    }
+                }
+            }
+        },
+        "/api/coi": {
+            "get": {
+                "summary": "List all generated certificates",
+                "description": "Returns a paginated list of all COI summaries. Supports filtering by client ID and status.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "clientId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by client ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "expired",
+                                "revoked"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of certificate summaries"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}": {
+            "get": {
+                "summary": "Get a certificate by number",
+                "description": "Returns the full COI document for a given certificate number.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full certificate details"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}/revoke": {
+            "post": {
+                "summary": "Revoke a certificate",
+                "description": "Marks a certificate as revoked. Revoked certificates cannot be reinstated.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "description": "Reason for revocation"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Certificate revoked"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
+                    },
+                    "409": {
+                        "description": "Certificate already revoked"
+                    }
+                }
+            }
+        },
+        "/api/coi/{certificateNumber}/verify": {
+            "get": {
+                "summary": "Verify a certificate is valid",
+                "description": "Public endpoint to verify whether a certificate is currently active and valid. Does not require authentication.",
+                "tags": [
+                    "Certificates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateNumber",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Verification result"
+                    },
+                    "404": {
+                        "description": "Certificate not found"
                     }
                 }
             }
