@@ -35,6 +35,12 @@ public class EmailRequest {
     /** Policy ID this email relates to, if any */
     private String policyId;
 
+    /** Email priority: low, normal, high, urgent */
+    private String priority = "normal";
+
+    /** File attachment references (list of attachment IDs from the file service) */
+    private List<String> attachmentIds;
+
     // --- Getters and Setters ---
 
     public List<String> getTo() { return to; }
@@ -63,4 +69,10 @@ public class EmailRequest {
 
     public String getPolicyId() { return policyId; }
     public void setPolicyId(String policyId) { this.policyId = policyId; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public List<String> getAttachmentIds() { return attachmentIds; }
+    public void setAttachmentIds(List<String> attachmentIds) { this.attachmentIds = attachmentIds; }
 }

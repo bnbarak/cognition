@@ -178,17 +178,10 @@ pages:
         concern: "UpdateClientRequest interface (partial update shape)"
 
   - doc: docs/docs/api/clients-controller.md
-    section: "DELETE /api/clients/{clientId}"
-    sources:
-      - file: javascript/src/routes/clients.ts
-        lines: [243, 263]
-        concern: "Delete client route handler and OpenAPI JSDoc"
-
-  - doc: docs/docs/api/clients-controller.md
     section: "POST /api/clients/{clientId}/policies"
     sources:
       - file: javascript/src/routes/clients.ts
-        lines: [265, 313]
+        lines: [243, 291]
         concern: "Add policy route handler and OpenAPI JSDoc"
       - file: javascript/src/types/client.ts
         lines: [1, 14]

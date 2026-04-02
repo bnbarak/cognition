@@ -29,6 +29,8 @@ Send a single email to one or more recipients. Optionally link the email to a CR
 | `templateId` | string | No | Template to use (overrides body) |
 | `clientId` | string | No | Associated CRM client ID for tracking |
 | `policyId` | string | No | Associated policy ID for tracking |
+| `priority` | string | No | Email priority level: `low`, `normal` (default), `high`, `urgent` |
+| `attachmentIds` | string[] | No | List of attachment IDs from the file service |
 
 **Example request:**
 
@@ -39,7 +41,9 @@ Send a single email to one or more recipients. Optionally link the email to a CR
   "body": "Hi Maria,\n\nYour State Farm auto policy (SF-2024-78901) is coming up for renewal on January 1, 2025.\n\nYour current annual premium is $1,850.00. I've reviewed your coverage and found a few options that could save you up to 15%.\n\nWould you like to schedule a call this week to discuss?\n\nBest regards,\nSarah Thompson\nBrightway Insurance Partners",
   "contentType": "text/plain",
   "clientId": "cli_001",
-  "policyId": "pol_101"
+  "policyId": "pol_101",
+  "priority": "high",
+  "attachmentIds": ["att_001", "att_002"]
 }
 ```
 
@@ -50,7 +54,8 @@ Send a single email to one or more recipients. Optionally link the email to a CR
   "success": true,
   "message": "Email queued for delivery",
   "messageId": "msg_7k2m9p4x",
-  "timestamp": "2024-06-15T14:30:00Z"
+  "timestamp": "2024-06-15T14:30:00Z",
+  "deliveryEstimate": "< 30 seconds"
 }
 ```
 
@@ -77,13 +82,15 @@ Send emails to multiple recipients. Each item in the array is a separate email w
     "to": ["maria.martinez@gmail.com"],
     "subject": "Renewal Reminder: Auto Policy SF-2024-78901",
     "body": "Hi Maria, your auto policy renews on Jan 1, 2025...",
-    "clientId": "cli_001"
+    "clientId": "cli_001",
+    "priority": "high"
   },
   {
     "to": ["james.obrien@outlook.com"],
     "subject": "Renewal Reminder: Commercial Policy HF-2024-COM-33219",
     "body": "Hi James, your commercial liability policy renews on Jul 1, 2025...",
-    "clientId": "cli_002"
+    "clientId": "cli_002",
+    "priority": "normal"
   }
 ]
 ```
