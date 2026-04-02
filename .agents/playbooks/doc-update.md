@@ -89,26 +89,38 @@ If the concern-group involves route handlers, controllers, request/response type
 
 1. **Read the changed source files** from the PR branch
 2. **Update source code annotations** to reflect the changes:
+   - **Read `.agents/skills/annotation-language/SKILL.md` first** — this defines the writing style, language quality, and examples you MUST follow for all annotations. Every summary, description, error message, and parameter description must meet the standards in that skill.
    - **Express (TypeScript):** Update JSDoc `@openapi` comment blocks above route handlers.
-     See `.agents/skills/express-openapi/SKILL.md` for patterns.
+     See `.agents/skills/express-openapi/SKILL.md` for structural patterns.
      ```
      /**
       * @openapi
-      * /api/auth/login:
-      *   post:
-      *     summary: Authenticate user
-      *     tags: [Auth]
-      *     requestBody: ...
-      *     responses: ...
+      * /api/claims/{claimNumber}/status:
+      *   patch:
+      *     summary: Transition claim to a new status
+      *     description: |
+      *       Transitions a claim to a new status. Only certain transitions are allowed:
+      *       - submitted -> under_review, denied
+      *       - under_review -> approved, denied
+      *       ...
+      *     tags: [Claims]
+      *     operationId: transitionClaimStatus
+      *     parameters: ...
+      *     responses:
+      *       200:
+      *         description: Claim status updated successfully
+      *       409:
+      *         description: Invalid status transition (e.g. cannot move from "closed" to "approved")
       */
      ```
    - **Spring Boot (Java):** Update `@Operation`, `@ApiResponse`, `@Schema`, `@Parameter` annotations.
-     See `.agents/skills/java-openapi/SKILL.md` for patterns.
+     See `.agents/skills/java-openapi/SKILL.md` for structural patterns.
      ```java
-     @Operation(summary = "Send email", description = "...")
-     @ApiResponse(responseCode = "200", description = "...")
+     @Operation(summary = "Send email notification", description = "Sends a templated email to the specified recipient. Validates the template exists and the recipient address is well-formed.")
+     @ApiResponse(responseCode = "200", description = "Email queued for delivery")
+     @ApiResponse(responseCode = "400", description = "Invalid recipient address or unknown template ID")
      ```
-   - If an endpoint was **added** → add full annotation block
+   - If an endpoint was **added** → add full annotation block (with operationId, descriptions, examples)
    - If an endpoint was **removed** → remove its annotation block
    - If request/response shapes changed → update the annotation schemas
    - If behavior changed → update summary/description text in annotations
@@ -236,19 +248,18 @@ Brief description of the controller's purpose.
 
 ## Skills Reference
 
-The following skill files define the annotation patterns you must follow:
+The following skill files define the annotation patterns you must follow. **Read all relevant skills before writing any annotations:**
 
-- **Express (TypeScript):** `.agents/skills/express-openapi/SKILL.md` — JSDoc `@openapi` comment blocks with swagger syntax
-- **Spring Boot (Java):** `.agents/skills/java-openapi/SKILL.md` — `@Operation`, `@ApiResponse`, `@Schema`, `@Parameter` annotations
-
-Read the relevant skill file before updating any annotations.
+- **Annotation Language & Style:** `.agents/skills/annotation-language/SKILL.md` — **READ THIS FIRST.** Defines writing quality standards: how to write summaries, descriptions, error messages, parameter descriptions, and operationIds. Includes before/after examples and anti-patterns.
+- **Express (TypeScript):** `.agents/skills/express-openapi/SKILL.md` — JSDoc `@openapi` comment blocks with swagger syntax (structural patterns)
+- **Spring Boot (Java):** `.agents/skills/java-openapi/SKILL.md` — `@Operation`, `@ApiResponse`, `@Schema`, `@Parameter` annotations (structural patterns)
 
 ---
 
 ## Advice
 
 - **Annotations live with the code.** This is a design principle. Docs are not separate from code — they're embedded in it as annotations. Any agent that touches the code can keep docs in sync.
-- **Read existing annotations first.** Before modifying, read existing annotation blocks in the same file to understand the style and level of detail.
+- **Read existing annotations first.** Before modifying, read existing annotation blocks in the same file to understand the style and level of detail. Then read `.agents/skills/annotation-language/SKILL.md` to ensure your new annotations meet the quality bar.
 - **Don't invent behavior.** Only document what the code actually does. If you're unsure about a behavior, set confidence to LOW and note the uncertainty.
 - **docs/domain-map.yaml is your compass.** If you can't find a file in the domain map, it might genuinely have no doc impact. Don't force a connection.
 - **Cross-cutting pages are tricky.** Changes to `index.md`, `product.md`, and `authentication.md` affect multiple concerns. Double-check consistency.
