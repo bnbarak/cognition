@@ -11,6 +11,7 @@ public class EmailResponse {
     private String message;
     private String messageId;
     private Instant timestamp;
+    private String deliveryEstimate;
 
     public EmailResponse() {
         this.timestamp = Instant.now();
@@ -21,6 +22,7 @@ public class EmailResponse {
         this.message = message;
         this.messageId = messageId;
         this.timestamp = Instant.now();
+        this.deliveryEstimate = "< 30 seconds";
     }
 
     // --- Getters and Setters ---
@@ -36,4 +38,7 @@ public class EmailResponse {
 
     public Instant getTimestamp() { return timestamp; }
     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
+
+    public String getDeliveryEstimate() { return deliveryEstimate; }
+    public void setDeliveryEstimate(String deliveryEstimate) { this.deliveryEstimate = deliveryEstimate; }
 }

@@ -212,36 +212,6 @@ Update an existing client. Only provided fields are updated (partial update).
 
 ---
 
-### DELETE `/api/clients/{clientId}`
-
-Delete a client and all associated policies, sent emails, and linked received emails. This action is irreversible. Only `admin` users can delete clients.
-
-**Path Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `clientId` | string | The client's unique ID |
-
-**Response (200):**
-
-```json
-{
-  "success": true,
-  "message": "Client cli_001 and all associated data have been deleted.",
-  "deletedPolicies": 3,
-  "deletedEmails": 12
-}
-```
-
-**Errors:**
-
-| Status | Code | Description |
-|--------|------|-------------|
-| 404 | `CLIENT_NOT_FOUND` | Client does not exist |
-| 403 | `INSUFFICIENT_PERMISSIONS` | Only admin can delete clients |
-
----
-
 ### POST `/api/clients/{clientId}/policies`
 
 Add a new insurance policy to a client.

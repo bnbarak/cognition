@@ -16,7 +16,7 @@ const RULES: ClassificationRule[] = [
   { pattern: /^docs\/mkdocs\.yml$/, classification: "config" },
   { pattern: /^java\/pom\.xml$/, classification: "config" },
   { pattern: /^AGENTS\.md$/, classification: "config" },
-  { pattern: /^domain-map\.yaml$/, classification: "config" },
+  { pattern: /^docs\/domain-map\.yaml$/, classification: "config" },
 ];
 
 export function classifyFile(path: string): FileClassification {

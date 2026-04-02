@@ -66,11 +66,29 @@ See `.agents/skills/diff-analyzer/SKILL.md` for full documentation.
 
 ### Domain Mapping
 
-Source of truth: `domain-map.yaml` in repo root.
+Source of truth: `docs/domain-map.yaml`.
 See `.agents/skills/update-domain-mapping/SKILL.md` for update procedures.
+
+## Playbooks
+
+### `!doc-update` — Automated Documentation & Spec Updater
+
+The main orchestration playbook for the doc-update agent. Triggered with `!doc-update PR#<number>`.
+
+**Flow:** Fetch diff → Run diff-analyzer CLI → Group by concern (via domain-map.yaml) → Walk decision tree per group → Update docs sequentially → Assess confidence → Create PR
+
+**Verdicts:** DELETION (HIGH) | INTERFACE_CHANGE (HIGH) | ENDPOINT_ADDITION (MEDIUM) | NEW_FEATURE (LOW) | LOGIC_CHANGE (LOW) | REFACTOR (HIGH) | CONFIG_ONLY (HIGH) | SPEC_ONLY (HIGH)
+
+**Confidence framework:**
+- HIGH → auto-submit with `auto-docs` label
+- MEDIUM → submit but flag for review with `docs-review-requested` label
+- LOW → submit as draft with `docs-needs-review` label
+
+Full playbook: `.agents/playbooks/doc-update.md`
+Devin playbook ID: `playbook-b62b896ebcbc4ffcbef343b6f10df480`
 
 ## TODO
 
 - [ ] Add CI/CD configuration
-- [ ] Build `!doc-update` playbook
-- [ ] Add confidence framework for auto-submit vs review
+- [ ] Test `!doc-update` playbook on PR #4, #5, #6
+- [ ] Graduate to coordinator + child session architecture (Phase 2)
