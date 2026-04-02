@@ -52,6 +52,22 @@ Two-way email built into the CRM — send tracked outbound emails and receive in
 - Tag-based triage (e.g. `claim`, `inquiry`, `renewal`, `urgent`)
 - Paginated inbox with unread count
 
+### Claims Management
+
+File and manage insurance claims through their full lifecycle. Claims are linked to policies and clients, with support for adjuster assignment, notes, and status tracking.
+
+| Claim Category | Example Use Case |
+|---------------|------------------|
+| **Auto Collision** | Vehicle accident damage claims |
+| **Property Damage** | Home or building damage |
+| **Bodily Injury** | Personal injury from covered incidents |
+| **Theft** | Stolen property claims |
+| **Natural Disaster** | Storm, flood, earthquake damage |
+| **Liability** | Third-party liability claims |
+| **Workers Comp** | Workplace injury or illness |
+
+Each claim tracks: claim number, policy number, client, category, status, incident details, estimated/approved amounts, assigned adjuster, and notes.
+
 ### Authentication & Access Control
 
 Secure, role-based access using JWT tokens. Three roles with distinct permission sets.
@@ -72,13 +88,13 @@ InsureCRM follows a two-service architecture:
 
 ### Core API (TypeScript / Express — port 3000)
 
-Handles identity, client data, and policy management.
+Handles identity, client data, policy management, and claims.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+| Auth, Clients, COI, Claims | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, claims filing & tracking |
 
-See: [Core API Reference](api/core-api.md)
+See: [Core API Reference](api/core-api.md) | [Claims API Reference](api/claims-controller.md)
 
 ### Email Service (Java / Spring Boot — port 8080)
 
@@ -102,6 +118,9 @@ Agency
  └── Client
       ├── Contact Info (email, phone, address)
       ├── Policy[] (auto, home, life, health, commercial)
+      │    └── Claim[] (submitted, under_review, approved, denied, settled, closed)
+      │         ├── Notes[]
+      │         └── Documents[]
       ├── Sent Emails[]
       └── Received Emails[]
 ```

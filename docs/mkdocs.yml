@@ -16,6 +16,7 @@ nav:
   - Authentication: authentication.md
   - API Reference:
       - Core API (TypeScript): api/core-api.md
+      - Claims API (TypeScript): api/claims-controller.md
       - Email API (Java): api/email-api.md
 
 markdown_extensions:

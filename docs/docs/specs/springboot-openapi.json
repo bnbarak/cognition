@@ -510,6 +510,15 @@
                     },
                     "policyId": {
                         "type": "string"
+                    },
+                    "priority": {
+                        "type": "string"
+                    },
+                    "attachmentIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -528,6 +537,9 @@
                     "timestamp": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "deliveryEstimate": {
+                        "type": "string"
                     }
                 }
             },

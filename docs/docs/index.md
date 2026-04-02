@@ -6,11 +6,11 @@ Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platfor
 
 ## System at a Glance
 
-InsureCRM is composed of **two backend services** and **five controllers**, each handling a distinct concern:
+InsureCRM is composed of **two backend services** and **six controllers**, each handling a distinct concern:
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
-| **Core API** (TypeScript / Express) | [Auth, Clients, COI](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation | `/api/auth`, `/api/clients`, `/api/coi` | 3000 |
+| **Core API** (TypeScript / Express) | [Auth, Clients, COI](api/core-api.md), [Claims](api/claims-controller.md) | Identity, login, tokens, client CRUD, policy management, COI generation, claims filing & tracking | `/api/auth`, `/api/clients`, `/api/coi`, `/api/claims` | 3000 |
 | **Email Service** (Java / Spring Boot) | [Send Email, Receive Email](api/email-api.md) | Outbound email dispatch, inbound email processing | `/api/emails/send`, `/api/emails/inbox` | 8080 |
 
 ---
@@ -51,7 +51,19 @@ Send tracked emails from within the CRM. Supports individual sends, bulk campaig
 
 See: [Email API Reference](api/email-api.md)
 
-### 4. Certificate of Insurance (`/api/coi`)
+### 4. Claims Management (`/api/claims`)
+
+File and track insurance claims through their lifecycle. Supports claim filing, status transitions, note-taking, and adjuster assignment.
+
+- File a new claim against a policy with incident details
+- Track claim status through defined transitions (submitted → under_review → approved/denied → settled → closed)
+- Add internal or external notes to claims
+- Assign adjusters to handle specific claims
+- Filter and search claims by client, status, or category
+
+See: [Claims API Reference](api/claims-controller.md)
+
+### 5. Certificate of Insurance (`/api/coi`)
 
 Generates Certificates of Insurance (COI) from policy data. Agents can create, list, verify, and revoke certificates for clients.
 
@@ -63,7 +75,7 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 
 See: [Core API Reference](api/core-api.md)
 
-### 5. Inbound Email (`/api/emails/inbox`)
+### 6. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
 

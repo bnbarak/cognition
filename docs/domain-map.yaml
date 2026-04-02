@@ -22,6 +22,8 @@ pages:
         concern: "Clients controller entry in the system table (base path, port, endpoint count)"
       - file: javascript/src/routes/coi.ts
         concern: "COI controller entry in the system table (base path, port, endpoint count)"
+      - file: javascript/src/routes/claims.ts
+        concern: "Claims controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
         concern: "Send Email controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
@@ -47,6 +49,8 @@ pages:
         concern: "Clients controller row in the Core API architecture table"
       - file: javascript/src/routes/coi.ts
         concern: "COI controller row in the Core API architecture table"
+      - file: javascript/src/routes/claims.ts
+        concern: "Claims controller row in the Core API architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
         concern: "Send Email controller row in the Email Service architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
@@ -110,6 +114,17 @@ pages:
       - file: javascript/src/types/coi.ts
         concern: "COI types referenced by OpenAPI schemas"
 
+  # ── Claims Controller (OAD-rendered from OpenAPI spec) ──────────
+  # Dedicated page for insurance claims management endpoints.
+
+  - doc: docs/docs/api/claims-controller.md
+    section: "API Reference (OAD-rendered)"
+    sources:
+      - file: javascript/src/routes/claims.ts
+        concern: "Claims endpoints — JSDoc @openapi annotations drive the spec"
+      - file: javascript/src/types/claim.ts
+        concern: "Claim types referenced by OpenAPI schemas"
+
   # ── Email API (OAD-rendered from OpenAPI spec) ─────────────────
   # This page uses the neoteroi OAD plugin — endpoint details are auto-generated
   # from docs/docs/specs/springboot-openapi.json. The agent updates source code
@@ -143,12 +158,16 @@ specs:
         concern: "Client endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/routes/coi.ts
         concern: "COI endpoints — JSDoc @openapi annotations define the spec"
+      - file: javascript/src/routes/claims.ts
+        concern: "Claims endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/types/auth.ts
         concern: "Auth request/response types referenced by OpenAPI schemas"
       - file: javascript/src/types/client.ts
         concern: "Client/Policy types referenced by OpenAPI schemas"
       - file: javascript/src/types/coi.ts
         concern: "COI types referenced by OpenAPI schemas"
+      - file: javascript/src/types/claim.ts
+        concern: "Claim types referenced by OpenAPI schemas"
 
   - spec: docs/docs/specs/springboot-openapi.json
     generator: scripts/generate-openapi-specs.sh
