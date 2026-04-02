@@ -33,29 +33,25 @@ You are a documentation agent. When a code PR is submitted, you analyze the chan
    cd javascript && npm install
    ```
 
-### Step 2: Generate the Diff
+### Step 2: Run the Diff Analyzer CLI
 
-1. Identify the PR branch from the user's input
-2. Fetch and check out the PR branch
-3. Generate the unified diff:
-   ```bash
-   git diff main...<branch-name> > /tmp/pr-diff.txt
-   ```
-
-### Step 3: Run the Diff Analyzer CLI
+The CLI can generate the diff directly from a PR number or branch name — no need to create diff files manually.
 
 ```bash
 cd tools/diff-analyzer
-npx ts-node src/cli.ts /tmp/pr-diff.txt --pretty > /tmp/diff-analysis.json
+# From a PR number:
+npx ts-node src/cli.ts --pr <number> --repo /path/to/repo --pretty > /tmp/diff-analysis.json
+# Or from a branch name:
+npx ts-node src/cli.ts --branch <branch-name> --repo /path/to/repo --pretty > /tmp/diff-analysis.json
 ```
 
-This produces structured JSON with per-file classification, change metrics, and hunk ranges. See `.agents/skills/diff-analyzer/SKILL.md` for output shape.
+This fetches the branch, computes the merge-base against `main`, generates the diff, and produces structured JSON with per-file classification, change metrics, and hunk ranges. See `.agents/skills/diff-analyzer/SKILL.md` for output shape and all options.
 
-### Step 4: Read Domain Map
+### Step 3: Read Domain Map
 
 Read `docs/domain-map.yaml` from the repo. This is the source of truth for code → docs → specs mapping.
 
-### Step 5: Filter Noise
+### Step 4: Filter Noise
 
 Remove files from the analysis that NEVER affect documentation:
 
@@ -67,7 +63,7 @@ Remove files from the analysis that NEVER affect documentation:
 
 If zero meaningful files remain → **STOP**. Report "No documentation impact detected" and exit.
 
-### Step 6: Group by Concern
+### Step 5: Group by Concern
 
 For each remaining file, look it up in `docs/domain-map.yaml`:
 
@@ -83,7 +79,7 @@ For each remaining file, look it up in `docs/domain-map.yaml`:
 **Bail-out rule:** If you identify more than 7 concern-groups → **STOP**. Report:
 > "This PR has [N] distinct documentation concerns. This is too complex for automated updates. Here's the breakdown: [list groups]. Please split the PR or review manually."
 
-### Step 7: Update Docs for Each Concern-Group
+### Step 6: Update Docs for Each Concern-Group
 
 Process each concern-group sequentially. For each group, determine which path to follow:
 
@@ -150,7 +146,7 @@ After processing each group, record:
 - **MEDIUM**: New doc pages were needed, or cross-cutting pages were affected, or the change required some interpretation
 - **LOW**: You're unsure whether a change is user-visible, or the code behavior is ambiguous, or you had to make judgment calls about what to document
 
-### Step 8: Commit and Create PR
+### Step 7: Commit and Create PR
 
 1. Create a new branch from the PR's branch:
    ```bash
@@ -176,7 +172,7 @@ After processing each group, record:
    ```
 5. Create the PR using the git_create_pr tool
 
-### Step 9: Assess Confidence and Decide
+### Step 8: Assess Confidence and Decide
 
 Calculate overall confidence = **lowest confidence across all groups**.
 
@@ -186,7 +182,7 @@ Calculate overall confidence = **lowest confidence across all groups**.
 | **MEDIUM** | Submit the PR but flag for review. Add label `docs-review-requested`. Comment: "Docs updated with medium confidence. Please review PR#X, particularly: [list MEDIUM groups]." |
 | **LOW** | Submit the PR as draft. Add label `docs-needs-review`. Comment: "Docs update drafted with low confidence. Human review required for PR#X. Uncertain areas: [list LOW groups with reasons]." |
 
-### Step 10: Report
+### Step 9: Report
 
 Send a summary message to the user with:
 - PR link

@@ -19,6 +19,24 @@ npm install
 
 ## Usage
 
+### From a PR number (recommended)
+
+```bash
+cd tools/diff-analyzer
+npx ts-node src/cli.ts --pr 5 --pretty
+npx ts-node src/cli.ts --pr 5 --repo /path/to/repo --pretty
+```
+
+This automatically fetches the PR branch, computes the merge-base against `main`, and generates the diff.
+
+### From a branch name
+
+```bash
+cd tools/diff-analyzer
+npx ts-node src/cli.ts --branch devin/1775067018-core-logic-changes --pretty
+npx ts-node src/cli.ts --branch feature --base develop --repo /path/to/repo --pretty
+```
+
 ### From a diff file
 
 ```bash
@@ -31,12 +49,15 @@ npx ts-node src/cli.ts <diff-file> [--pretty]
 git diff main...feature-branch | npx ts-node src/cli.ts - --pretty
 ```
 
-### Generate a diff from a PR branch
+### Options
 
-```bash
-git diff main...<branch-name> > /tmp/diff.txt
-npx ts-node src/cli.ts /tmp/diff.txt --pretty
-```
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--pr <number>` | Generate diff from a GitHub PR number | — |
+| `--branch <name>` | Generate diff from a branch name | — |
+| `--base <branch>` | Base branch to diff against | `main` |
+| `--repo <path>` | Path to the git repository | cwd |
+| `--pretty` | Pretty-print JSON output | off |
 
 ---
 
@@ -95,7 +116,7 @@ interface DiffAnalysis {
 
 ## How the Agent Should Use This
 
-1. Run the CLI on the PR diff to get the structured JSON
+1. Run the CLI with `--pr` or `--branch` to get the structured JSON (no need to generate diff files manually)
 2. Read `docs/domain-map.yaml` from the repo
 3. Cross-reference each `file.path` against `docs/domain-map.yaml` sources
 4. Use `file.hunks` line ranges to check overlap with `docs/domain-map.yaml` line ranges

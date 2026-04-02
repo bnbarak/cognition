@@ -59,7 +59,13 @@ When writing tests against fixture data (e.g., diff files):
 Located at `tools/diff-analyzer/`. Parses unified Git diffs into structured JSON.
 
 ```bash
-cd tools/diff-analyzer && npx ts-node src/cli.ts <diff-file> --pretty
+cd tools/diff-analyzer
+# From a PR number:
+npx ts-node src/cli.ts --pr 5 --pretty
+# From a branch:
+npx ts-node src/cli.ts --branch feature-branch --pretty
+# From a diff file:
+npx ts-node src/cli.ts <diff-file> --pretty
 ```
 
 See `.agents/skills/diff-analyzer/SKILL.md` for full documentation.
@@ -75,9 +81,7 @@ See `.agents/skills/update-domain-mapping/SKILL.md` for update procedures.
 
 The main orchestration playbook for the doc-update agent. Triggered with `!doc-update PR#<number>`.
 
-**Flow:** Fetch diff → Run diff-analyzer CLI → Group by concern (via domain-map.yaml) → Walk decision tree per group → Update docs sequentially → Assess confidence → Create PR
-
-**Verdicts:** DELETION (HIGH) | INTERFACE_CHANGE (HIGH) | ENDPOINT_ADDITION (MEDIUM) | NEW_FEATURE (LOW) | LOGIC_CHANGE (LOW) | REFACTOR (HIGH) | CONFIG_ONLY (HIGH) | SPEC_ONLY (HIGH)
+**Flow:** Run diff-analyzer CLI (`--pr` or `--branch`) → Read domain map → Filter noise → Group by concern → Update docs per group (Path A: annotations → regen specs → OAD renders; Path B: edit narrative markdown) → Assess confidence → Create PR
 
 **Confidence framework:**
 - HIGH → auto-submit with `auto-docs` label
