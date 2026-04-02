@@ -242,6 +242,69 @@ router.put("/:clientId", (req: Request<{ clientId: string }, Client, UpdateClien
 
 /**
  * @openapi
+ * /api/clients/{clientId}/tags:
+ *   patch:
+ *     summary: Bulk update tags on a client
+ *     description: Add or remove multiple tags from a client in a single request. Supports add and remove operations.
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: clientId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               add:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Tags to add to the client
+ *               remove:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Tags to remove from the client
+ *     responses:
+ *       200:
+ *         description: Tags updated successfully
+ *       404:
+ *         description: Client not found
+ */
+router.patch("/:clientId/tags", (req: Request<{ clientId: string }, {}, { add?: string[]; remove?: string[] }>, res: Response) => {
+  const currentTags = new Set(mockClient.tags);
+
+  // Add new tags
+  if (req.body.add) {
+    for (const tag of req.body.add) {
+      currentTags.add(tag);
+    }
+  }
+
+  // Remove specified tags
+  if (req.body.remove) {
+    for (const tag of req.body.remove) {
+      currentTags.delete(tag);
+    }
+  }
+
+  const updatedTags = Array.from(currentTags);
+  res.json({
+    clientId: req.params.clientId,
+    tags: updatedTags,
+    added: req.body.add ?? [],
+    removed: req.body.remove ?? [],
+    message: "Tags updated successfully",
+  });
+});
+
+/**
+ * @openapi
  * /api/clients/{clientId}/policies:
  *   post:
  *     summary: Add a policy to a client
