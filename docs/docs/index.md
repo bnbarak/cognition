@@ -51,7 +51,19 @@ Send tracked emails from within the CRM. Supports individual sends, bulk campaig
 
 See: [Email API Reference](api/email-api.md)
 
-### 4. Inbound Email (`/api/emails/inbox`)
+### 4. Certificate of Insurance (`/api/coi`)
+
+Generates Certificates of Insurance (COI) from policy data. Agents can create, list, verify, and revoke certificates for clients.
+
+- Generate a COI from an existing policy
+- List all certificates with filtering by client or status
+- Look up a certificate by certificate number
+- Verify certificate authenticity
+- Revoke a certificate when a policy is cancelled
+
+See: [Core API Reference](api/core-api.md)
+
+### 5. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
 
@@ -113,7 +125,7 @@ mvn spring-boot:run
 
 ```bash
 cd docs
-pip install mkdocs mkdocs-shadcn
+pip install mkdocs mkdocs-shadcn neoteroi-mkdocs pymdown-extensions
 mkdocs serve
 # Docs: http://localhost:8000
 ```
