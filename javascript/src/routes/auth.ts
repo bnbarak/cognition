@@ -103,6 +103,38 @@ router.post("/login", (req: Request<{}, AuthResponse, LoginRequest>, res: Respon
  *     responses:
  *       201:
  *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     agencyName:
+ *                       type: string
+ *                     agencyId:
+ *                       type: string
+ *                       description: Auto-generated unique agency identifier
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, agent, viewer]
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
  *       409:
  *         description: Email already in use
  */

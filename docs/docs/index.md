@@ -11,7 +11,7 @@ InsureCRM is composed of **two backend services** and **four controllers**, each
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
 | **Core API** (TypeScript / Express) | [Auth Controller](api/auth-controller.md) | Identity, login, tokens, password recovery | `/api/auth` | 3000 |
-| **Core API** (TypeScript / Express) | [Clients Controller](api/clients-controller.md) | Client CRUD, policy management, search | `/api/clients` | 3000 |
+| **Core API** (TypeScript / Express) | [Clients Controller](api/clients-controller.md) | Client CRUD, policy management, bulk tag management, search | `/api/clients` | 3000 |
 | **Email Service** (Java / Spring Boot) | [Send Email Controller](api/send-email-controller.md) | Outbound email dispatch, templates, delivery tracking | `/api/emails/send` | 8080 |
 | **Email Service** (Java / Spring Boot) | [Receive Email Controller](api/receive-email-controller.md) | Inbound email inbox, client matching, triage | `/api/emails/inbox` | 8080 |
 
@@ -36,6 +36,7 @@ The core data layer — CRUD operations for insurance clients and their policies
 
 - List, search, and filter clients (by agent, tags, name)
 - Create and update client profiles with contact info and addresses
+- Bulk tag management — add or remove multiple tags in a single request
 - Attach insurance policies (auto, home, life, health, commercial) to clients
 - Track premium amounts, renewal dates, and policy status
 

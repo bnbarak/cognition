@@ -242,6 +242,53 @@ Delete a client and all associated policies, sent emails, and linked received em
 
 ---
 
+### PATCH `/api/clients/{clientId}/tags`
+
+Bulk update tags on a client. Add or remove multiple tags in a single request. Tags are used for client segmentation (e.g. `high-value`, `renewal-q4`, `commercial`).
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `clientId` | string | The client's unique ID |
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `add` | string[] | No | Tags to add to the client |
+| `remove` | string[] | No | Tags to remove from the client |
+
+**Example request:**
+
+```json
+{
+  "add": ["commercial", "priority"],
+  "remove": ["new-lead"]
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "clientId": "cli_001",
+  "tags": ["vip", "renewal-due", "commercial", "priority"],
+  "added": ["commercial", "priority"],
+  "removed": ["new-lead"],
+  "message": "Tags updated successfully"
+}
+```
+
+**Errors:**
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 404 | `CLIENT_NOT_FOUND` | Client does not exist |
+| 403 | `INSUFFICIENT_PERMISSIONS` | Viewer role cannot modify tags |
+
+---
+
 ### POST `/api/clients/{clientId}/policies`
 
 Add a new insurance policy to a client.
