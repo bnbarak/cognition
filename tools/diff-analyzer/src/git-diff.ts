@@ -104,6 +104,7 @@ export function generateDiff(options: GitDiffOptions): string {
 
   if (options.pr !== undefined) {
     headRef = resolvePRBranch(options.pr, cwd);
+    fetchBranch(headRef, cwd);
   } else if (options.branch) {
     headRef = options.branch;
     fetchBranch(headRef, cwd);
