@@ -10,10 +10,8 @@ InsureCRM is composed of **two backend services** and **four controllers**, each
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
-| **Core API** (TypeScript / Express) | [Auth Controller](api/auth-controller.md) | Identity, login, tokens, password recovery | `/api/auth` | 3000 |
-| **Core API** (TypeScript / Express) | [Clients Controller](api/clients-controller.md) | Client CRUD, policy management, search | `/api/clients` | 3000 |
-| **Email Service** (Java / Spring Boot) | [Send Email Controller](api/send-email-controller.md) | Outbound email dispatch, templates, delivery tracking | `/api/emails/send` | 8080 |
-| **Email Service** (Java / Spring Boot) | [Receive Email Controller](api/receive-email-controller.md) | Inbound email inbox, client matching, triage | `/api/emails/inbox` | 8080 |
+| **Core API** (TypeScript / Express) | [Auth, Clients, COI](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation | `/api/auth`, `/api/clients`, `/api/coi` | 3000 |
+| **Email Service** (Java / Spring Boot) | [Send Email, Receive Email](api/email-api.md) | Outbound email dispatch, inbound email processing | `/api/emails/send`, `/api/emails/inbox` | 8080 |
 
 ---
 
@@ -28,7 +26,7 @@ Handles all user-facing identity operations. Uses **JWT** with short-lived acces
 - Token refresh for seamless sessions
 - Password reset via email (forgot → reset flow)
 
-See: [Authentication Guide](authentication.md) | [Auth Controller API](api/auth-controller.md)
+See: [Authentication Guide](authentication.md) | [Core API Reference](api/core-api.md)
 
 ### 2. Client & Policy Management (`/api/clients`)
 
@@ -39,7 +37,7 @@ The core data layer — managing insurance clients and their policies. Every cli
 - Attach insurance policies (auto, home, life, health, commercial) to clients
 - Track premium amounts, renewal dates, and policy status
 
-See: [Clients Controller API](api/clients-controller.md)
+See: [Core API Reference](api/core-api.md)
 
 ### 3. Outbound Email (`/api/emails/send`)
 
@@ -51,7 +49,7 @@ Send tracked emails from within the CRM. Supports individual sends, bulk campaig
 - Delivery tracking: status, opens, clicks
 - Full sent history with date and client filtering
 
-See: [Send Email Controller API](api/send-email-controller.md)
+See: [Email API Reference](api/email-api.md)
 
 ### 4. Inbound Email (`/api/emails/inbox`)
 
@@ -63,7 +61,7 @@ Receives and manages incoming emails. Automatically matches emails to CRM client
 - Read/unread status management
 - Tag-based classification for agent triage
 
-See: [Receive Email Controller API](api/receive-email-controller.md)
+See: [Email API Reference](api/email-api.md)
 
 ---
 
@@ -124,5 +122,5 @@ mkdocs serve
 
 ```bash
 ./scripts/generate-openapi-specs.sh
-# Output: specs/express-openapi.json, specs/springboot-openapi.json
+# Output: docs/docs/specs/express-openapi.json, docs/docs/specs/springboot-openapi.json
 ```
