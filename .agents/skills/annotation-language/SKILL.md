@@ -222,7 +222,7 @@ Use `camelCase` with the pattern: `<verb><Resource>[Qualifier]`
 | `POST /api/claims` | `fileClaim` |
 | `GET /api/claims` | `listClaims` |
 | `GET /api/claims/:id` | `getClaimByNumber` |
-| `PATCH /api/claims/:id/status` | `updateClaimStatus` |
+| `PATCH /api/claims/:id/status` | `transitionClaimStatus` |
 | `POST /api/claims/:id/notes` | `addClaimNote` |
 | `PATCH /api/claims/:id/assign` | `assignAdjuster` |
 | `POST /api/coi/generate` | `generateCertificate` |
@@ -232,6 +232,7 @@ Use `camelCase` with the pattern: `<verb><Resource>[Qualifier]`
 - Every endpoint MUST have an `operationId`
 - Use domain verbs (file, generate, verify) not generic CRUD (create, read, update)
 - The resource noun should match the tag name (Claims -> `*Claim*`, Certificates -> `*Certificate*`)
+- `update` is acceptable for simple field changes (e.g. `updateClientEmail`), but prefer domain verbs when the action has business meaning (e.g. `transitionClaimStatus` not `updateClaimStatus`)
 
 ---
 

@@ -104,7 +104,7 @@ If the concern-group involves route handlers, controllers, request/response type
       *       - under_review -> approved, denied
       *       ...
       *     tags: [Claims]
-      *     operationId: updateClaimStatus
+      *     operationId: transitionClaimStatus
       *     parameters: ...
       *     responses:
       *       200:
