@@ -181,7 +181,7 @@ pages:
     section: "POST /api/clients/{clientId}/policies"
     sources:
       - file: javascript/src/routes/clients.ts
-        lines: [265, 313]
+        lines: [243, 291]
         concern: "Add policy route handler and OpenAPI JSDoc"
       - file: javascript/src/types/client.ts
         lines: [1, 14]
