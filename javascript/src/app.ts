@@ -3,6 +3,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import authRouter from "./routes/auth";
 import clientsRouter from "./routes/clients";
+import coiRouter from "./routes/coi";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
     tags: [
       { name: "Auth", description: "Authentication and user management" },
       { name: "Clients", description: "Client and policy management" },
+      { name: "Certificates", description: "Certificate of Insurance (COI) generation and management" },
     ],
   },
   apis: ["./src/routes/*.ts"],
@@ -36,6 +38,7 @@ app.get("/openapi.json", (_req, res) => res.json(swaggerSpec));
 /** Mount route modules */
 app.use("/api/auth", authRouter);
 app.use("/api/clients", clientsRouter);
+app.use("/api/coi", coiRouter);
 
 /** Health check */
 app.get("/health", (_req, res) => {
