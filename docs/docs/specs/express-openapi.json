@@ -1433,5 +1433,198 @@
             }
         }
     },
-    "components": {}
+    "components": {
+        "schemas": {
+            "ClaimDocument": {
+                "type": "object",
+                "properties": {
+                    "documentId": {
+                        "type": "string"
+                    },
+                    "fileName": {
+                        "type": "string"
+                    },
+                    "mimeType": {
+                        "type": "string"
+                    },
+                    "uploadedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ClaimNote": {
+                "type": "object",
+                "properties": {
+                    "noteId": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "internal": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "Claim": {
+                "type": "object",
+                "properties": {
+                    "claimNumber": {
+                        "type": "string",
+                        "example": "CLM-2026-ABCD1234"
+                    },
+                    "policyNumber": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "auto_collision",
+                            "property_damage",
+                            "bodily_injury",
+                            "theft",
+                            "natural_disaster",
+                            "liability",
+                            "workers_comp"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "submitted",
+                            "under_review",
+                            "approved",
+                            "denied",
+                            "settled",
+                            "closed"
+                        ]
+                    },
+                    "filedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "incidentDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "estimatedAmount": {
+                        "type": "number"
+                    },
+                    "approvedAmount": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "incidentLocation": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "contactPhone": {
+                        "type": "string"
+                    },
+                    "contactEmail": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "assignedAdjuster": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "documents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClaimDocument"
+                        }
+                    },
+                    "notes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClaimNote"
+                        }
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ClaimSummary": {
+                "type": "object",
+                "properties": {
+                    "claimNumber": {
+                        "type": "string"
+                    },
+                    "policyNumber": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "auto_collision",
+                            "property_damage",
+                            "bodily_injury",
+                            "theft",
+                            "natural_disaster",
+                            "liability",
+                            "workers_comp"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "submitted",
+                            "under_review",
+                            "approved",
+                            "denied",
+                            "settled",
+                            "closed"
+                        ]
+                    },
+                    "filedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "estimatedAmount": {
+                        "type": "number"
+                    },
+                    "approvedAmount": {
+                        "type": "number",
+                        "nullable": true
+                    }
+                }
+            }
+        }
+    }
 }
