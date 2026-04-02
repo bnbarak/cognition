@@ -20,6 +20,8 @@ pages:
         concern: "Auth controller entry in the system table (base path, port, endpoint count)"
       - file: javascript/src/routes/clients.ts
         concern: "Clients controller entry in the system table (base path, port, endpoint count)"
+      - file: javascript/src/routes/coi.ts
+        concern: "COI controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
         concern: "Send Email controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
@@ -43,6 +45,8 @@ pages:
         concern: "Auth controller row in the Core API architecture table"
       - file: javascript/src/routes/clients.ts
         concern: "Clients controller row in the Core API architecture table"
+      - file: javascript/src/routes/coi.ts
+        concern: "COI controller row in the Core API architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
         concern: "Send Email controller row in the Email Service architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
