@@ -1,5 +1,9 @@
 # Authentication Guide
 
+<!-- doc-freshness: { "commit": "8e46ffd", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 18 } -->
+
+!!! info "Last updated: 2026-04-02 | commit `8e46ffd` | by devin-ai-integration[bot] | PR #18"
+
 InsureCRM uses **JWT-based authentication** with role-based access control (RBAC). All API requests (except login, forgot-password, and reset-password) must include a valid access token. The register endpoint requires admin-level authentication.
 
 ---

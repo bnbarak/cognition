@@ -2,6 +2,10 @@
 
 Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platform purpose-built for insurance agencies — managing clients, policies, and agent communications in one system.
 
+<!-- doc-freshness: { "commit": "8e46ffd", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 18 } -->
+
+!!! info "Last updated: 2026-04-02 | commit `8e46ffd` | by devin-ai-integration[bot] | PR #18"
+
 ---
 
 ## System at a Glance

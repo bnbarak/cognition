@@ -1,5 +1,9 @@
 # Core API (TypeScript / Express)
 
+<!-- doc-freshness: { "commit": "8e46ffd", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 18 } -->
+
+!!! info "Last updated: 2026-04-02 | commit `8e46ffd` | by devin-ai-integration[bot] | PR #18"
+
 **Base URL:** `http://localhost:3000`
 **Source:** `javascript/src/routes/`
 
