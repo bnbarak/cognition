@@ -66,7 +66,7 @@ See `.agents/skills/diff-analyzer/SKILL.md` for full documentation.
 
 ### Domain Mapping
 
-Source of truth: `domain-map.yaml` in repo root.
+Source of truth: `docs/domain-map.yaml`.
 See `.agents/skills/update-domain-mapping/SKILL.md` for update procedures.
 
 ## Playbooks

@@ -88,7 +88,7 @@ interface DiffAnalysis {
 | `docs/mkdocs.yml` | `config` |
 | `java/pom.xml` | `config` |
 | `AGENTS.md` | `config` |
-| `domain-map.yaml` | `config` |
+| `docs/domain-map.yaml` | `config` |
 | Everything else | `unknown` |
 
 ---
@@ -96,9 +96,9 @@ interface DiffAnalysis {
 ## How the Agent Should Use This
 
 1. Run the CLI on the PR diff to get the structured JSON
-2. Read `domain-map.yaml` from the repo
-3. Cross-reference each `file.path` against `domain-map.yaml` sources
-4. Use `file.hunks` line ranges to check overlap with `domain-map.yaml` line ranges
+2. Read `docs/domain-map.yaml` from the repo
+3. Cross-reference each `file.path` against `docs/domain-map.yaml` sources
+4. Use `file.hunks` line ranges to check overlap with `docs/domain-map.yaml` line ranges
 5. Build the list of docs/specs that need updating
 6. The `pr` summary flags (`hasRouteChanges`, `hasSpecChanges`, etc.) help determine scope
 

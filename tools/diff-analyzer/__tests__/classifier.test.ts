@@ -66,7 +66,7 @@ describe("classifyFile", () => {
   });
 
   test("classifyFile_domainMapYaml", () => {
-    const result = classifyFile("domain-map.yaml");
+    const result = classifyFile("docs/domain-map.yaml");
 
     expect(result).toBe("config");
   });

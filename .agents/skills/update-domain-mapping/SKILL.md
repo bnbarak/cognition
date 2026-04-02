@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Maintain `domain-map.yaml` — the single source of truth that maps **source code files** to **documentation pages** and **OpenAPI specs**. This file is consumed by the `!doc-update` agent to determine which docs need updating when code changes.
+Maintain `docs/domain-map.yaml` — the single source of truth that maps **source code files** to **documentation pages** and **OpenAPI specs**. This file is consumed by the `!doc-update` agent to determine which docs need updating when code changes.
 
 ---
 
@@ -134,7 +134,7 @@ Some doc pages aggregate info from multiple controllers. The `index.md` (homepag
 
 ## Validation Checklist
 
-Before committing changes to `domain-map.yaml`, verify:
+Before committing changes to `docs/domain-map.yaml`, verify:
 
 - [ ] Every `doc` path actually exists in the repo (or will be created by the same PR)
 - [ ] Every `file` path actually exists in the repo
