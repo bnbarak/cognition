@@ -85,211 +85,68 @@ pages:
       - file: javascript/src/routes/auth.ts
         concern: "Error codes returned by auth endpoints (401, 423, 409, 400)"
 
-  # ── Auth Controller API ───────────────────
+  # ── Core API (OAD-rendered from OpenAPI spec) ───────────────────
+  # This page uses the neoteroi OAD plugin — endpoint details are auto-generated
+  # from docs/docs/specs/express-openapi.json. The agent updates source code
+  # annotations (JSDoc @openapi blocks), not the markdown page itself.
 
-  - doc: docs/docs/api/auth-controller.md
-    section: "POST /api/auth/login"
+  - doc: docs/docs/api/core-api.md
+    section: "API Reference (OAD-rendered)"
     sources:
       - file: javascript/src/routes/auth.ts
-        lines: [14, 50]
-        concern: "Login route handler and OpenAPI JSDoc annotation"
-      - file: javascript/src/types/auth.ts
-        concern: "LoginRequest and AuthResponse type definitions"
-
-  - doc: docs/docs/api/auth-controller.md
-    section: "POST /api/auth/register"
-    sources:
-      - file: javascript/src/routes/auth.ts
-        lines: [52, 101]
-        concern: "Register route handler and OpenAPI JSDoc annotation"
-      - file: javascript/src/types/auth.ts
-        concern: "RegisterRequest and UserProfile type definitions"
-
-  - doc: docs/docs/api/auth-controller.md
-    section: "POST /api/auth/refresh"
-    sources:
-      - file: javascript/src/routes/auth.ts
-        lines: [103, 135]
-        concern: "Refresh token route handler and OpenAPI JSDoc annotation"
-      - file: javascript/src/types/auth.ts
-        concern: "RefreshTokenRequest type definition"
-
-  - doc: docs/docs/api/auth-controller.md
-    section: "POST /api/auth/forgot-password"
-    sources:
-      - file: javascript/src/routes/auth.ts
-        lines: [137, 165]
-        concern: "Forgot password route handler and OpenAPI JSDoc annotation"
-      - file: javascript/src/types/auth.ts
-        concern: "ForgotPasswordRequest type definition"
-
-  - doc: docs/docs/api/auth-controller.md
-    section: "POST /api/auth/reset-password"
-    sources:
-      - file: javascript/src/routes/auth.ts
-        lines: [167, 196]
-        concern: "Reset password route handler and OpenAPI JSDoc annotation"
-      - file: javascript/src/types/auth.ts
-        concern: "ResetPasswordRequest type definition"
-
-  # ── Clients Controller API ────────────────
-
-  - doc: docs/docs/api/clients-controller.md
-    section: "GET /api/clients"
-    sources:
+        concern: "Auth endpoints — JSDoc @openapi annotations drive the spec"
       - file: javascript/src/routes/clients.ts
-        lines: [47, 101]
-        concern: "List clients route handler with pagination/search/filter and OpenAPI JSDoc"
+        concern: "Client endpoints — JSDoc @openapi annotations drive the spec"
+      - file: javascript/src/routes/coi.ts
+        concern: "COI endpoints — JSDoc @openapi annotations drive the spec"
+      - file: javascript/src/types/auth.ts
+        concern: "Auth request/response types referenced by OpenAPI schemas"
       - file: javascript/src/types/client.ts
-        lines: [17, 36]
-        concern: "Client interface (response shape)"
-      - file: javascript/src/types/client.ts
-        lines: [74, 91]
-        concern: "ListClientsQuery and PaginatedClientsResponse interfaces"
+        concern: "Client/Policy types referenced by OpenAPI schemas"
+      - file: javascript/src/types/coi.ts
+        concern: "COI types referenced by OpenAPI schemas"
 
-  - doc: docs/docs/api/clients-controller.md
-    section: "GET /api/clients/{clientId}"
-    sources:
-      - file: javascript/src/routes/clients.ts
-        lines: [103, 123]
-        concern: "Get single client route handler and OpenAPI JSDoc"
-      - file: javascript/src/types/client.ts
-        lines: [17, 36]
-        concern: "Client interface (response shape with policies)"
+  # ── Email API (OAD-rendered from OpenAPI spec) ─────────────────
+  # This page uses the neoteroi OAD plugin — endpoint details are auto-generated
+  # from docs/docs/specs/springboot-openapi.json. The agent updates source code
+  # annotations (@Operation/@Schema), not the markdown page itself.
 
-  - doc: docs/docs/api/clients-controller.md
-    section: "POST /api/clients"
-    sources:
-      - file: javascript/src/routes/clients.ts
-        lines: [125, 187]
-        concern: "Create client route handler and OpenAPI JSDoc"
-      - file: javascript/src/types/client.ts
-        lines: [39, 54]
-        concern: "CreateClientRequest interface (request body shape)"
-
-  - doc: docs/docs/api/clients-controller.md
-    section: "PUT /api/clients/{clientId}"
-    sources:
-      - file: javascript/src/routes/clients.ts
-        lines: [189, 241]
-        concern: "Update client route handler and OpenAPI JSDoc"
-      - file: javascript/src/types/client.ts
-        lines: [57, 71]
-        concern: "UpdateClientRequest interface (partial update shape)"
-
-  - doc: docs/docs/api/clients-controller.md
-    section: "POST /api/clients/{clientId}/policies"
-    sources:
-      - file: javascript/src/routes/clients.ts
-        lines: [306, 354]
-        concern: "Add policy route handler and OpenAPI JSDoc"
-      - file: javascript/src/types/client.ts
-        lines: [1, 14]
-        concern: "PolicyType enum and Policy interface"
-      - file: javascript/src/types/client.ts
-        lines: [94, 101]
-        concern: "AddPolicyRequest interface"
-
-  # ── Send Email Controller API ─────────────
-
-  - doc: docs/docs/api/send-email-controller.md
-    section: "POST /api/emails/send"
+  - doc: docs/docs/api/email-api.md
+    section: "API Reference (OAD-rendered)"
     sources:
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
-        lines: [29, 38]
-        concern: "Send single email endpoint handler and Swagger annotations"
+        concern: "Send Email endpoints — @Operation/@ApiResponse annotations drive the spec"
+      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
+        concern: "Receive Email endpoints — @Operation/@Tag annotations drive the spec"
       - file: java/src/main/java/com/insurecrm/email/model/EmailRequest.java
-        concern: "EmailRequest DTO (request body shape)"
+        concern: "EmailRequest DTO — @Schema annotations for request body spec"
       - file: java/src/main/java/com/insurecrm/email/model/EmailResponse.java
-        concern: "EmailResponse DTO (response shape)"
-
-  - doc: docs/docs/api/send-email-controller.md
-    section: "POST /api/emails/send/bulk"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
-        lines: [40, 51]
-        concern: "Bulk email endpoint handler and Swagger annotations"
-      - file: java/src/main/java/com/insurecrm/email/model/EmailRequest.java
-        concern: "EmailRequest DTO (reused for bulk array items)"
-
-  - doc: docs/docs/api/send-email-controller.md
-    section: "POST /api/emails/send/template/{templateId}"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
-        lines: [53, 67]
-        concern: "Template email endpoint handler and Swagger annotations"
-
-  - doc: docs/docs/api/send-email-controller.md
-    section: "GET /api/emails/send/status/{messageId}"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
-        lines: [69, 80]
-        concern: "Email delivery status endpoint handler"
-
-  - doc: docs/docs/api/send-email-controller.md
-    section: "GET /api/emails/send/history"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
-        lines: [82, 104]
-        concern: "Sent email history endpoint handler with pagination and filters"
-
-  # ── Receive Email Controller API ──────────
-
-  - doc: docs/docs/api/receive-email-controller.md
-    section: "GET /api/emails/inbox"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
-        lines: [39, 56]
-        concern: "List inbox emails endpoint handler with pagination and filters"
+        concern: "EmailResponse DTO — @Schema annotations for response spec"
       - file: java/src/main/java/com/insurecrm/email/model/ReceivedEmail.java
-        concern: "ReceivedEmail model (response shape)"
-
-  - doc: docs/docs/api/receive-email-controller.md
-    section: "GET /api/emails/inbox/{emailId}"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
-        lines: [58, 66]
-        concern: "Get single email endpoint handler (auto-marks as read)"
-
-  - doc: docs/docs/api/receive-email-controller.md
-    section: "PATCH /api/emails/inbox/{emailId}/read"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
-        lines: [68, 79]
-        concern: "Toggle read/unread status endpoint handler"
-
-  - doc: docs/docs/api/receive-email-controller.md
-    section: "POST /api/emails/inbox/{emailId}/link"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
-        lines: [81, 92]
-        concern: "Manual client linking endpoint handler"
-
-  - doc: docs/docs/api/receive-email-controller.md
-    section: "DELETE /api/emails/inbox/{emailId}"
-    sources:
-      - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
-        lines: [94, 102]
-        concern: "Delete email endpoint handler (admin only)"
+        concern: "ReceivedEmail model — @Schema annotations for inbox response spec"
 
 # ─────────────────────────────────────────────
 # OpenAPI Specs
 # ─────────────────────────────────────────────
 specs:
 
-  - spec: specs/express-openapi.json
+  - spec: docs/docs/specs/express-openapi.json
     generator: scripts/generate-openapi-specs.sh
     sources:
       - file: javascript/src/routes/auth.ts
         concern: "Auth endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/routes/clients.ts
         concern: "Client endpoints — JSDoc @openapi annotations define the spec"
+      - file: javascript/src/routes/coi.ts
+        concern: "COI endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/types/auth.ts
         concern: "Auth request/response types referenced by OpenAPI schemas"
       - file: javascript/src/types/client.ts
         concern: "Client/Policy types referenced by OpenAPI schemas"
+      - file: javascript/src/types/coi.ts
+        concern: "COI types referenced by OpenAPI schemas"
 
-  - spec: specs/springboot-openapi.json
+  - spec: docs/docs/specs/springboot-openapi.json
     generator: scripts/generate-openapi-specs.sh
     sources:
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
