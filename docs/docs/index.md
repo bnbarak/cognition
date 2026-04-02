@@ -32,7 +32,7 @@ See: [Authentication Guide](authentication.md) | [Auth Controller API](api/auth-
 
 ### 2. Client & Policy Management (`/api/clients`)
 
-The core data layer — CRUD operations for insurance clients and their policies. Every client belongs to an agency and is assigned to a specific agent.
+The core data layer — managing insurance clients and their policies. Every client belongs to an agency and is assigned to a specific agent.
 
 - List, search, and filter clients (by agent, tags, name)
 - Create and update client profiles with contact info and addresses
