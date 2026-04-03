@@ -169,10 +169,12 @@ Don't just say "Bad request". Say **what input condition** triggers the error.
 **When to use `$ref`:**
 - The response type is a domain object used in multiple endpoints (Claim, Client, Certificate)
 - The type is defined in a TypeScript interface or Java DTO
+- **Any wrapper pattern (`{ success, message, data }`) that appears in 3+ endpoints** — define `SuccessResponse` / `ErrorResponse` components
+- **Any request body with 4+ properties** — define a named component (e.g. `FileClaimRequest`)
 
 **When to inline:**
-- Simple wrapper objects (`{ success: boolean, message: string }`)
-- One-off response shapes used only by this endpoint
+- One-off response shapes used only by this endpoint with 1-3 properties
+- Error responses where only `description` is needed (no schema block)
 
 **GOOD pattern — $ref for domain objects:**
 ```yaml
@@ -182,16 +184,39 @@ responses:
     content:
       application/json:
         schema:
+          $ref: '#/components/schemas/ClaimResponse'
+```
+
+**GOOD pattern — concise error responses (no schema needed):**
+```yaml
+  400:
+    description: Validation error — missing required fields or invalid estimatedAmount
+  404:
+    description: No claim found with the given claim number
+  409:
+    description: Invalid status transition (e.g. cannot move from "closed" to "approved")
+```
+
+**BAD pattern — inlining the same wrapper in every endpoint:**
+```yaml
+# DON'T DO THIS — repeating {success, message, data} inline 6 times
+responses:
+  200:
+    content:
+      application/json:
+        schema:
           type: object
           properties:
             success:
               type: boolean
               example: true
+            message:
+              type: string
             data:
               $ref: '#/components/schemas/Claim'
 ```
 
-**GOOD pattern — inline for simple wrappers:**
+**GOOD pattern — inline for true one-offs:**
 ```yaml
 responses:
   200:
@@ -207,8 +232,6 @@ responses:
               type: array
               items:
                 type: string
-            message:
-              type: string
 ```
 
 ---
@@ -266,7 +289,7 @@ Each controller gets exactly one tag. The tag name is the **business domain**, n
 router.patch("/:claimNumber/assign", (req, res) => {
 ```
 
-### AFTER (grounded annotation):
+### AFTER (grounded annotation — concise with $ref):
 
 ```ts
 /**
@@ -301,15 +324,7 @@ router.patch("/:claimNumber/assign", (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/Claim'
+ *               $ref: '#/components/schemas/ClaimResponse'
  *       400:
  *         description: Missing required field (adjusterName)
  *       404:
@@ -317,6 +332,8 @@ router.patch("/:claimNumber/assign", (req, res) => {
  */
 router.patch("/:claimNumber/assign", (req, res) => {
 ```
+
+Note: The response uses `$ref: '#/components/schemas/ClaimResponse'` instead of inlining the `{ success, message, data }` wrapper. This keeps each endpoint annotation under ~30 lines.
 
 ---
 
