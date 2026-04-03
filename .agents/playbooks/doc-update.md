@@ -184,6 +184,10 @@ After processing each group, record:
    git push origin docs/<pr-branch>
    ```
 5. Create the PR using the git_create_pr tool
+6. **Add the `agent-artifact` label** to the PR so it's identifiable as agent-generated output:
+   ```bash
+   gh pr edit <pr-number> --add-label "agent-artifact" --repo bnbarak/cognition
+   ```
 
 ### Step 8: Assess Confidence and Decide
 
@@ -194,6 +198,8 @@ Calculate overall confidence = **lowest confidence across all groups**.
 | **HIGH** | Auto-submit the PR. Add label `auto-docs`. Comment on the original PR: "Docs updated automatically. See PR#X." |
 | **MEDIUM** | Submit the PR but flag for review. Add label `docs-review-requested`. Comment: "Docs updated with medium confidence. Please review PR#X, particularly: [list MEDIUM groups]." |
 | **LOW** | Submit the PR as draft. Add label `docs-needs-review`. Comment: "Docs update drafted with low confidence. Human review required for PR#X. Uncertain areas: [list LOW groups with reasons]." |
+
+**Note:** The `agent-artifact` label (added in Step 7) is always applied regardless of confidence level. The confidence labels above are additive.
 
 ### Step 9: Report
 
