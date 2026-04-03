@@ -26,6 +26,8 @@ pages:
         concern: "Send Email controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
         concern: "Receive Email controller entry in the system table (base path, port, endpoint count)"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notifications controller entry in the system table (base path, port, endpoint count)"
 
   - doc: docs/docs/index.md
     section: "Authentication Overview"
@@ -51,6 +53,8 @@ pages:
         concern: "Send Email controller row in the Email Service architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
         concern: "Receive Email controller row in the Email Service architecture table"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notifications controller row in the Core API architecture table and feature description"
 
   - doc: docs/docs/product.md
     section: "Authentication & Access Control"
@@ -109,6 +113,8 @@ pages:
         concern: "Client/Policy types referenced by OpenAPI schemas"
       - file: javascript/src/types/coi.ts
         concern: "COI types referenced by OpenAPI schemas"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notification endpoints — JSDoc @openapi annotations drive the spec"
 
   # ── Email API (OAD-rendered from OpenAPI spec) ─────────────────
   # This page uses the neoteroi OAD plugin — endpoint details are auto-generated
@@ -149,6 +155,8 @@ specs:
         concern: "Client/Policy types referenced by OpenAPI schemas"
       - file: javascript/src/types/coi.ts
         concern: "COI types referenced by OpenAPI schemas"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notification endpoints — JSDoc @openapi annotations define the spec"
 
   - spec: docs/docs/specs/springboot-openapi.json
     generator: scripts/generate-openapi-specs.sh

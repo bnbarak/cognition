@@ -56,6 +56,16 @@ Two-way email built into the CRM — send tracked outbound emails and receive in
 - Tag-based triage (e.g. `claim`, `inquiry`, `renewal`, `urgent`)
 - Paginated inbox with unread count
 
+### Client Notifications
+
+Keep clients informed with in-app notifications covering policy renewals, claim updates, payment reminders, and document requests.
+
+- **Notification types** — claim_update, policy_renewal, payment_due, document_request, general
+- **Priority levels** — low, medium, high, urgent
+- **Read tracking** — mark individual or all client notifications as read
+- **Filtering** — filter by client, type, priority, or read status
+- **Pagination** — configurable page size with newest-first sorting
+
 ### Authentication & Access Control
 
 Secure, role-based access using JWT tokens. Three roles with distinct permission sets.
@@ -80,7 +90,7 @@ Handles identity, client data, and policy management.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+| Auth, Clients, COI, Notifications | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, client notifications |
 
 See: [Core API Reference](api/core-api.md)
 
