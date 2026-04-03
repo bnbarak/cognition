@@ -196,10 +196,41 @@ Calculate overall confidence = **lowest confidence across all groups**.
 | Overall Confidence | Action |
 |-------------------|--------|
 | **HIGH** | Auto-submit the PR. Add label `auto-docs`. Comment on the original PR: "Docs updated automatically. See PR#X." |
-| **MEDIUM** | Submit the PR but flag for review. Add label `docs-review-requested`. Comment: "Docs updated with medium confidence. Please review PR#X, particularly: [list MEDIUM groups]." |
-| **LOW** | Submit the PR as draft. Add label `docs-needs-review`. Comment: "Docs update drafted with low confidence. Human review required for PR#X. Uncertain areas: [list LOW groups with reasons]." |
+| **MEDIUM** | Submit the PR but flag for review. Add label `docs-review-requested`. Include a **Review Guide** in the PR description (see below). Comment on the original PR linking to the docs PR. |
+| **LOW** | Submit the PR as draft. Add label `docs-needs-review`. Include a **Review Guide** in the PR description (see below). Comment on the original PR linking to the docs PR. |
 
 **Note:** The `agent-artifact` label (added in Step 7) is always applied regardless of confidence level. The confidence labels above are additive.
+
+#### Review Guide (required for MEDIUM and LOW confidence)
+
+When the PR is not HIGH confidence, add a **"Review Guide"** section to the PR description that tells the human reviewer:
+
+1. **Why this needs review** — what made you less confident? Be specific (e.g. "The endpoint has conditional logic I couldn't fully trace", "New controller with no existing annotation patterns to follow", "Cross-cutting changes affected 3 doc pages and consistency is hard to verify").
+2. **Where to focus** — list the exact files and line ranges the reviewer should look at first. Don't make them hunt. Example:
+   - `javascript/src/routes/claims.ts:45-82` — new annotation for status transition endpoint, verify the state machine transitions match the code
+   - `docs/docs/api/core-api.md:12-18` — updated controller table, check that the new row is accurate
+   - `docs/domain-map.yaml:34-40` — new mappings for notifications controller
+3. **What you're unsure about** — explicitly call out any judgment calls you made (e.g. "I documented the `priority` field as optional because the code has a default, but the original PR description implies it's required").
+
+**Example PR description section:**
+```markdown
+## Review Guide
+
+**Why this needs review:** The COI controller has complex coverage validation
+logic with multiple code paths. I annotated the happy path confidently but
+the edge cases (expired policies, insufficient coverage) are harder to verify
+from code alone.
+
+**Where to focus:**
+- `javascript/src/routes/coi.ts:88-120` — verify the 409 error description
+  matches the actual validation logic
+- `docs/docs/specs/express-openapi.json` — check that the COI schemas
+  include all fields from the `Certificate` interface
+
+**Judgment calls:**
+- Documented `coverageAmount` as required based on the validation check at
+  line 95, but there may be a default I'm not seeing.
+```
 
 ### Step 9: Report
 
