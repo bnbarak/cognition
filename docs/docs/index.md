@@ -67,17 +67,6 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 
 See: [Core API Reference](api/core-api.md)
 
-### 6. Notifications (`/api/notifications`)
-
-Manages client notifications within the CRM. Agents can create, list, filter, and manage read status of notifications tied to specific clients.
-
-- Create notifications with type, priority, and metadata
-- List notifications with filtering by client, type, read status, and priority
-- Mark individual notifications or all client notifications as read
-- Delete notifications
-
-See: [Core API Reference](api/core-api.md)
-
 ### 5. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
@@ -89,6 +78,17 @@ Receives and manages incoming emails. Automatically matches emails to CRM client
 - Tag-based classification for agent triage
 
 See: [Email API Reference](api/email-api.md)
+
+### 6. Notifications (`/api/notifications`)
+
+Manages client notifications within the CRM. Agents can create, list, filter, and manage read status of notifications tied to specific clients.
+
+- Create notifications with type, priority, and metadata
+- List notifications with filtering by client, type, read status, and priority
+- Mark individual notifications or all client notifications as read
+- Delete notifications
+
+See: [Core API Reference](api/core-api.md)
 
 ---
 
