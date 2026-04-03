@@ -1,0 +1,38 @@
+name: Trigger doc-update agent on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  trigger-doc-update:
+    if: >
+      github.event.pull_request.merged == true &&
+      !startsWith(github.event.pull_request.head.ref, 'docs/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Devin doc-update session
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions" \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"prompt\": \"!doc-update PR#${{ github.event.pull_request.number }}\"
+            }")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Failed to trigger doc-update session (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "Doc-update agent triggered for PR #${{ github.event.pull_request.number }}"
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
