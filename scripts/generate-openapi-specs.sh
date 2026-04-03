@@ -82,7 +82,7 @@ import json, sys
 spec = json.load(sys.stdin)
 new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'script': 'scripts/generate-openapi-specs.sh'}}
 new_spec.update(spec)
-json.dump(new_spec, sys.stdout, indent=4)
+json.dump(new_spec, sys.stdout, indent=4); print()
 " > "$SPECS_DIR/express-openapi.json"
 echo "  Saved Express spec to docs/docs/specs/express-openapi.json"
 
@@ -92,7 +92,7 @@ import json, sys
 spec = json.load(sys.stdin)
 new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'script': 'scripts/generate-openapi-specs.sh'}}
 new_spec.update(spec)
-json.dump(new_spec, sys.stdout, indent=4)
+json.dump(new_spec, sys.stdout, indent=4); print()
 " > "$SPECS_DIR/springboot-openapi.json"
 echo "  Saved Spring Boot spec to docs/docs/specs/springboot-openapi.json"
 
