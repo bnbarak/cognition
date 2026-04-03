@@ -35,7 +35,7 @@ You are a documentation agent. When a code PR is submitted, you analyze the chan
 
 ### Step 2: Run the Diff Analyzer CLI (with Action Plan)
 
-The CLI generates the diff AND a deterministic action plan when given `--domain-map`. This pre-computes which specs to regenerate, which concern groups to process, and which update path (A/B/both) each group needs. **You follow the action plan — you do not decide these things yourself.**
+The CLI generates the diff AND a deterministic action plan when given `--domain-map`. This pre-computes which specs need regeneration and which files are unmapped. **You still decide how to group concerns and which update path (A/B/both) to use** based on the domain map.
 
 ```bash
 cd tools/diff-analyzer
