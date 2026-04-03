@@ -73,7 +73,7 @@ Manages insurance claims filing, tracking, and adjuster assignment. Agents can f
 
 - File a new claim against an existing policy
 - List and filter claims by client, status, or category
-- Track claim status (filed, under_review, approved, denied, closed)
+- Track claim status (submitted, under_review, approved, denied, settled, closed)
 - Assign and manage adjusters on claims
 
 See: [Core API Reference](api/core-api.md)
