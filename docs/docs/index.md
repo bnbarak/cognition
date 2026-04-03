@@ -43,7 +43,7 @@ The core data layer — managing insurance clients and their policies. Every cli
 
 See: [Core API Reference](api/core-api.md)
 
-### 4. Outbound Email (`/api/emails/send`)
+### 3. Outbound Email (`/api/emails/send`)
 
 Send tracked emails from within the CRM. Supports individual sends, bulk campaigns, and template-based emails that auto-populate with client/policy data.
 
@@ -55,7 +55,7 @@ Send tracked emails from within the CRM. Supports individual sends, bulk campaig
 
 See: [Email API Reference](api/email-api.md)
 
-### 5. Certificate of Insurance (`/api/coi`)
+### 4. Certificate of Insurance (`/api/coi`)
 
 Generates Certificates of Insurance (COI) from policy data. Agents can create, list, verify, and revoke certificates for clients.
 
@@ -67,7 +67,7 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 
 See: [Core API Reference](api/core-api.md)
 
-### 6. Notifications (`/api/notifications`)
+### 5. Notifications (`/api/notifications`)
 
 Manages client-facing notifications for events like claim updates, policy renewals, payment reminders, and document requests. Notifications are prioritized and support read/unread tracking.
 
@@ -78,7 +78,7 @@ Manages client-facing notifications for events like claim updates, policy renewa
 
 See: [Core API Reference](api/core-api.md)
 
-### 7. Inbound Email (`/api/emails/inbox`)
+### 6. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
 
