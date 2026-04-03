@@ -1132,7 +1132,7 @@
         "/api/notifications/{notificationId}/read": {
             "patch": {
                 "summary": "Mark a notification as read",
-                "description": "Sets the notification's read flag to true and records the current timestamp as readAt. Idempotent \u2014 marking an already-read notification has no adverse effect.\n",
+                "description": "Sets the notification's read flag to true and records the current timestamp as readAt. Calling this on an already-read notification updates the readAt timestamp to the current time.\n",
                 "tags": [
                     "Notifications"
                 ],
