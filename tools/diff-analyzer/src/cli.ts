@@ -2,15 +2,18 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import * as yaml from "js-yaml";
 import { parseGitDiff } from "./parser";
 import { generateDiff } from "./git-diff";
+import { generateActionPlan } from "./action-plan";
+import { DomainMap } from "./types";
 
 function printUsage(): void {
-  console.error("Usage: diff-analyzer <diff-file> [--pretty]");
-  console.error("       diff-analyzer --pr <number> [--base <branch>] [--repo <path>] [--pretty]");
-  console.error("       diff-analyzer --branch <name> [--base <branch>] [--repo <path>] [--pretty]");
+  console.error("Usage: diff-analyzer <diff-file> [--pretty] [--domain-map <path>]");
+  console.error("       diff-analyzer --pr <number> [--base <branch>] [--repo <path>] [--pretty] [--domain-map <path>]");
+  console.error("       diff-analyzer --branch <name> [--base <branch>] [--repo <path>] [--pretty] [--domain-map <path>]");
   console.error("");
-  console.error("Parses a unified diff and outputs structured JSON.");
+  console.error("Parses a unified diff and outputs structured JSON with an optional action plan.");
   console.error("");
   console.error("Modes:");
   console.error("  <diff-file>       Read diff from a file (or - for stdin)");
@@ -18,9 +21,10 @@ function printUsage(): void {
   console.error("  --branch <name>   Generate diff from a branch name");
   console.error("");
   console.error("Options:");
-  console.error("  --base <branch>   Base branch to diff against (default: main)");
-  console.error("  --repo <path>     Path to the git repository (default: cwd)");
-  console.error("  --pretty          Pretty-print JSON output");
+  console.error("  --base <branch>     Base branch to diff against (default: main)");
+  console.error("  --repo <path>       Path to the git repository (default: cwd)");
+  console.error("  --domain-map <path> Path to domain-map.yaml — enables actionPlan in output");
+  console.error("  --pretty            Pretty-print JSON output");
   process.exit(1);
 }
 
@@ -31,6 +35,7 @@ interface CliArgs {
   base: string;
   repo: string;
   pretty: boolean;
+  domainMap: string | null;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -41,6 +46,7 @@ function parseArgs(argv: string[]): CliArgs {
     base: "main",
     repo: process.cwd(),
     pretty: false,
+    domainMap: null,
   };
 
   let i = 0;
@@ -84,6 +90,13 @@ function parseArgs(argv: string[]): CliArgs {
         process.exit(1);
       }
       args.repo = path.resolve(argv[i]);
+    } else if (arg === "--domain-map") {
+      i++;
+      if (i >= argv.length) {
+        console.error("Error: --domain-map requires a path");
+        process.exit(1);
+      }
+      args.domainMap = path.resolve(argv[i]);
     } else if (!args.diffPath) {
       args.diffPath = arg;
     } else {
@@ -147,6 +160,18 @@ function main(): void {
   }
 
   const result = parseGitDiff(diffText);
+
+  // If domain-map is provided, generate an action plan
+  if (args.domainMap) {
+    const mapPath = args.domainMap;
+    if (!fs.existsSync(mapPath)) {
+      console.error(`Error: domain-map not found: ${mapPath}`);
+      process.exit(1);
+    }
+    const mapYaml = fs.readFileSync(mapPath, "utf-8");
+    const domainMap = yaml.load(mapYaml) as DomainMap;
+    result.actionPlan = generateActionPlan(result, domainMap);
+  }
 
   const indent = args.pretty ? 2 : undefined;
   console.log(JSON.stringify(result, null, indent));

@@ -2,6 +2,41 @@
 export interface DiffAnalysis {
   pr: PRSummary;
   files: FileChange[];
+  actionPlan?: ActionPlan;
+}
+
+/** Deterministic action plan derived from domain-map + diff analysis */
+export interface ActionPlan {
+  /** Which specs need regeneration based on changed files */
+  affectedSpecs: AffectedSpec[];
+  /** Pre-grouped concern groups with doc pages and paths */
+  concernGroups: ConcernGroup[];
+  /** Files that don't map to any domain-map entry */
+  unmappedFiles: string[];
+  /** Whether any concern group involves a new (unmapped) controller */
+  hasNewController: boolean;
+}
+
+/** A spec that needs regeneration */
+export interface AffectedSpec {
+  spec: string;
+  generator: string;
+  /** Source files in this spec that were changed in the diff */
+  changedSources: string[];
+}
+
+/** A pre-computed concern group for the agent */
+export interface ConcernGroup {
+  /** Name of the concern group (derived from doc page or controller name) */
+  name: string;
+  /** Which update path to use: "A" (annotations→specs→OAD), "B" (narrative markdown), or "both" */
+  path: "A" | "B" | "both";
+  /** Doc pages that need updating */
+  docs: string[];
+  /** Source files in this group that were changed */
+  changedFiles: string[];
+  /** Specs that need regeneration for this group */
+  specs: string[];
 }
 
 /** PR-level summary metrics */
