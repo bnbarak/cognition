@@ -26,6 +26,8 @@ pages:
         concern: "Send Email controller entry in the system table (base path, port, endpoint count)"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
         concern: "Receive Email controller entry in the system table (base path, port, endpoint count)"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notifications controller entry in the system table (base path, port, endpoint count)"
 
   - doc: docs/docs/index.md
     section: "Authentication Overview"
@@ -47,6 +49,8 @@ pages:
         concern: "Clients controller row in the Core API architecture table"
       - file: javascript/src/routes/coi.ts
         concern: "COI controller row in the Core API architecture table"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notifications controller row in the Core API architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
         concern: "Send Email controller row in the Email Service architecture table"
       - file: java/src/main/java/com/insurecrm/email/controller/ReceiveEmailController.java
@@ -103,6 +107,8 @@ pages:
         concern: "Client endpoints — JSDoc @openapi annotations drive the spec"
       - file: javascript/src/routes/coi.ts
         concern: "COI endpoints — JSDoc @openapi annotations drive the spec"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notification endpoints — JSDoc @openapi annotations drive the spec"
       - file: javascript/src/types/auth.ts
         concern: "Auth request/response types referenced by OpenAPI schemas"
       - file: javascript/src/types/client.ts
@@ -143,6 +149,8 @@ specs:
         concern: "Client endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/routes/coi.ts
         concern: "COI endpoints — JSDoc @openapi annotations define the spec"
+      - file: javascript/src/routes/notifications.ts
+        concern: "Notification endpoints — JSDoc @openapi annotations define the spec"
       - file: javascript/src/types/auth.ts
         concern: "Auth request/response types referenced by OpenAPI schemas"
       - file: javascript/src/types/client.ts

@@ -80,7 +80,7 @@ Handles identity, client data, and policy management.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+| Auth, Clients, COI, Notifications | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, client notifications |
 
 See: [Core API Reference](api/core-api.md)
 
@@ -106,6 +106,7 @@ Agency
  └── Client
       ├── Contact Info (email, phone, address)
       ├── Policy[] (auto, home, life, health, commercial)
+      ├── Notification[] (claim_update, policy_renewal, payment_due, document_request, general)
       ├── Sent Emails[]
       └── Received Emails[]
 ```
