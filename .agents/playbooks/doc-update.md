@@ -47,9 +47,8 @@ npx ts-node src/cli.ts --branch <branch-name> --repo /path/to/repo --domain-map 
 
 The output JSON now includes an `actionPlan` field with:
 - `affectedSpecs` — which specs need regeneration (and which changed sources triggered it)
-- `concernGroups` — pre-grouped concerns with doc pages, update path (`A`/`B`/`both`), and tagged specs
 - `unmappedFiles` — files that don't map to any domain-map entry (may need manual review)
-- `hasNewController` — whether any concern group involves a new unmapped controller
+- `hasNewController` — whether any unmapped file looks like a new controller
 
 See `.agents/skills/diff-analyzer/SKILL.md` for full output shape and all options.
 
