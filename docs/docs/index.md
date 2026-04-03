@@ -10,11 +10,11 @@ Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platfor
 
 ## System at a Glance
 
-InsureCRM is composed of **two backend services** and **five controllers**, each handling a distinct concern:
+InsureCRM is composed of **two backend services** and **six controllers**, each handling a distinct concern:
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
-| **Core API** (TypeScript / Express) | [Auth, Clients, COI](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation | `/api/auth`, `/api/clients`, `/api/coi` | 3000 |
+| **Core API** (TypeScript / Express) | [Auth, Clients, COI, Notifications](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation, notifications | `/api/auth`, `/api/clients`, `/api/coi`, `/api/notifications` | 3000 |
 | **Email Service** (Java / Spring Boot) | [Send Email, Receive Email](api/email-api.md) | Outbound email dispatch, inbound email processing | `/api/emails/send`, `/api/emails/inbox` | 8080 |
 
 ---
@@ -43,7 +43,7 @@ The core data layer — managing insurance clients and their policies. Every cli
 
 See: [Core API Reference](api/core-api.md)
 
-### 3. Outbound Email (`/api/emails/send`)
+### 4. Outbound Email (`/api/emails/send`)
 
 Send tracked emails from within the CRM. Supports individual sends, bulk campaigns, and template-based emails that auto-populate with client/policy data.
 
@@ -55,7 +55,7 @@ Send tracked emails from within the CRM. Supports individual sends, bulk campaig
 
 See: [Email API Reference](api/email-api.md)
 
-### 4. Certificate of Insurance (`/api/coi`)
+### 5. Certificate of Insurance (`/api/coi`)
 
 Generates Certificates of Insurance (COI) from policy data. Agents can create, list, verify, and revoke certificates for clients.
 
@@ -67,7 +67,18 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 
 See: [Core API Reference](api/core-api.md)
 
-### 5. Inbound Email (`/api/emails/inbox`)
+### 6. Notifications (`/api/notifications`)
+
+Manages client-facing notifications for events like claim updates, policy renewals, payment reminders, and document requests. Notifications are prioritized and support read/unread tracking.
+
+- Create notifications linked to a client
+- List notifications with filtering by client, type, priority, and read status
+- Mark individual or all client notifications as read
+- Delete notifications
+
+See: [Core API Reference](api/core-api.md)
+
+### 7. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
 
