@@ -13,113 +13,103 @@ function runCli(args: string): string {
   });
 }
 
-describe("CLI --domain-map integration", () => {
-  describe("with diff4.txt (Express route changes)", () => {
-    let result: Record<string, unknown>;
+let diff4Result: Record<string, unknown>;
+let diff6Result: Record<string, unknown>;
 
-    beforeAll(() => {
-      const raw = runCli(
-        `${path.join(FIXTURES, "diff4.txt")} --domain-map ${DOMAIN_MAP}`
-      );
-      result = JSON.parse(raw);
-    });
+beforeAll(() => {
+  const raw4 = runCli(
+    `${path.join(FIXTURES, "diff4.txt")} --domain-map ${DOMAIN_MAP}`
+  );
+  diff4Result = JSON.parse(raw4);
 
-    it("includes actionPlan in output", () => {
-      expect(result).toHaveProperty("actionPlan");
-    });
+  const raw6 = runCli(
+    `${path.join(FIXTURES, "diff6.txt")} --domain-map ${DOMAIN_MAP}`
+  );
+  diff6Result = JSON.parse(raw6);
+});
 
-    it("has affectedSpecs array", () => {
-      const plan = result.actionPlan as Record<string, unknown>;
-      expect(Array.isArray(plan.affectedSpecs)).toBe(true);
-    });
+test("cliDomainMap_includesActionPlanInOutput", () => {
+  expect(diff4Result).toHaveProperty("actionPlan");
+});
 
-    it("has unmappedFiles array", () => {
-      const plan = result.actionPlan as Record<string, unknown>;
-      expect(Array.isArray(plan.unmappedFiles)).toBe(true);
-    });
+test("cliDomainMap_hasAffectedSpecsArray", () => {
+  const plan = diff4Result.actionPlan as Record<string, unknown>;
 
-    it("has hasNewController boolean", () => {
-      const plan = result.actionPlan as Record<string, unknown>;
-      expect(typeof plan.hasNewController).toBe("boolean");
-    });
+  expect(Array.isArray(plan.affectedSpecs)).toBe(true);
+});
 
-    it("affected specs include express-openapi when Express routes changed", () => {
-      const plan = result.actionPlan as {
-        affectedSpecs: Array<{ spec: string; generator: string; changedSources: string[] }>;
-      };
-      const expressSpec = plan.affectedSpecs.find((s) =>
-        s.spec.includes("express-openapi")
-      );
-      if (expressSpec) {
-        expect(expressSpec.generator).toBe("scripts/generate-openapi-specs.sh");
-        expect(expressSpec.changedSources.length).toBeGreaterThan(0);
-      }
-    });
+test("cliDomainMap_hasUnmappedFilesArray", () => {
+  const plan = diff4Result.actionPlan as Record<string, unknown>;
 
-    it("does NOT include springboot-openapi when no Java files changed", () => {
-      const plan = result.actionPlan as {
-        affectedSpecs: Array<{ spec: string }>;
-      };
-      const springSpec = plan.affectedSpecs.find((s) =>
-        s.spec.includes("springboot-openapi")
-      );
-      expect(springSpec).toBeUndefined();
-    });
+  expect(Array.isArray(plan.unmappedFiles)).toBe(true);
+});
 
-  });
+test("cliDomainMap_hasNewControllerBoolean", () => {
+  const plan = diff4Result.actionPlan as Record<string, unknown>;
 
-  describe("without --domain-map flag", () => {
-    it("does NOT include actionPlan in output", () => {
-      const raw = runCli(path.join(FIXTURES, "diff4.txt"));
-      const result = JSON.parse(raw);
-      expect(result.actionPlan).toBeUndefined();
-    });
-  });
+  expect(typeof plan.hasNewController).toBe("boolean");
+});
 
-  describe("with --domain-map pointing to nonexistent file", () => {
-    it("exits with error", () => {
-      expect(() => {
-        runCli(
-          `${path.join(FIXTURES, "diff4.txt")} --domain-map /nonexistent/map.yaml`
-        );
-      }).toThrow();
-    });
-  });
+test("cliDomainMap_affectedSpecsIncludeExpressOpenapi", () => {
+  const plan = diff4Result.actionPlan as {
+    affectedSpecs: Array<{ spec: string; generator: string; changedSources: string[] }>;
+  };
+  const expressSpec = plan.affectedSpecs.find((s) =>
+    s.spec.includes("express-openapi")
+  );
 
-  describe("with --pretty flag", () => {
-    it("pretty-prints JSON with actionPlan", () => {
-      const raw = runCli(
-        `${path.join(FIXTURES, "diff4.txt")} --domain-map ${DOMAIN_MAP} --pretty`
-      );
-      // Pretty-printed JSON has newlines and indentation
-      expect(raw).toContain("\n");
-      expect(raw).toContain("  ");
-      const result = JSON.parse(raw);
-      expect(result).toHaveProperty("actionPlan");
-    });
-  });
+  expect(expressSpec).toBeDefined();
+  expect(expressSpec!.generator).toBe("scripts/generate-openapi-specs.sh");
+  expect(expressSpec!.changedSources.length).toBeGreaterThan(0);
+});
 
-  describe("with diff6.txt (new controller, unmapped)", () => {
-    let result: Record<string, unknown>;
+test("cliDomainMap_excludesSpringbootWhenNoJavaChanged", () => {
+  const plan = diff4Result.actionPlan as {
+    affectedSpecs: Array<{ spec: string }>;
+  };
+  const springSpec = plan.affectedSpecs.find((s) =>
+    s.spec.includes("springboot-openapi")
+  );
 
-    beforeAll(() => {
-      const raw = runCli(
-        `${path.join(FIXTURES, "diff6.txt")} --domain-map ${DOMAIN_MAP}`
-      );
-      result = JSON.parse(raw);
-    });
+  expect(springSpec).toBeUndefined();
+});
 
-    it("detects new controller in unmapped route file", () => {
-      const plan = result.actionPlan as { hasNewController: boolean };
-      expect(plan.hasNewController).toBe(true);
-    });
+test("cliDomainMap_noActionPlanWithoutFlag", () => {
+  const raw = runCli(path.join(FIXTURES, "diff4.txt"));
+  const result = JSON.parse(raw);
 
-    it("lists new controller in unmappedFiles", () => {
-      const plan = result.actionPlan as {
-        unmappedFiles: string[];
-      };
-      // diff6 adds a new controller — should appear in unmappedFiles
-      expect(plan.unmappedFiles.length).toBeGreaterThan(0);
-    });
-  });
+  expect(result.actionPlan).toBeUndefined();
+});
+
+test("cliDomainMap_exitsOnNonexistentDomainMap", () => {
+  expect(() => {
+    runCli(
+      `${path.join(FIXTURES, "diff4.txt")} --domain-map /nonexistent/map.yaml`
+    );
+  }).toThrow();
+});
+
+test("cliDomainMap_prettyPrintsWithActionPlan", () => {
+  const raw = runCli(
+    `${path.join(FIXTURES, "diff4.txt")} --domain-map ${DOMAIN_MAP} --pretty`
+  );
+
+  expect(raw).toContain("\n");
+  expect(raw).toContain("  ");
+  const result = JSON.parse(raw);
+  expect(result).toHaveProperty("actionPlan");
+});
+
+test("cliDomainMap_detectsNewControllerInDiff6", () => {
+  const plan = diff6Result.actionPlan as { hasNewController: boolean };
+
+  expect(plan.hasNewController).toBe(true);
+});
+
+test("cliDomainMap_listsNewControllerInUnmappedFiles", () => {
+  const plan = diff6Result.actionPlan as {
+    unmappedFiles: string[];
+  };
+
+  expect(plan.unmappedFiles.length).toBeGreaterThan(0);
 });

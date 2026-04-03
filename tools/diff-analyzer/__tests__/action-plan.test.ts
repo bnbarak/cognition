@@ -86,8 +86,7 @@ const DOMAIN_MAP: DomainMap = {
 };
 
 describe("generateActionPlan", () => {
-  describe("affectedSpecs", () => {
-    it("returns only Express spec when only JS files changed", () => {
+  test("generateActionPlan_onlyExpressSpecWhenJsChanged", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/routes/clients.ts", classification: "route" }),
       ]);
@@ -97,9 +96,9 @@ describe("generateActionPlan", () => {
       expect(plan.affectedSpecs).toHaveLength(1);
       expect(plan.affectedSpecs[0].spec).toBe("docs/docs/specs/express-openapi.json");
       expect(plan.affectedSpecs[0].changedSources).toEqual(["javascript/src/routes/clients.ts"]);
-    });
+  });
 
-    it("returns only Spring Boot spec when only Java files changed", () => {
+  test("generateActionPlan_onlySpringSpecWhenJavaChanged", () => {
       const analysis = makeAnalysis([
         makeFile({
           path: "java/src/main/java/com/insurecrm/email/controller/SendEmailController.java",
@@ -111,9 +110,9 @@ describe("generateActionPlan", () => {
 
       expect(plan.affectedSpecs).toHaveLength(1);
       expect(plan.affectedSpecs[0].spec).toBe("docs/docs/specs/springboot-openapi.json");
-    });
+  });
 
-    it("returns both specs when JS and Java files changed", () => {
+  test("generateActionPlan_bothSpecsWhenBothChanged", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),
         makeFile({
@@ -130,9 +129,9 @@ describe("generateActionPlan", () => {
         "docs/docs/specs/express-openapi.json",
         "docs/docs/specs/springboot-openapi.json",
       ]);
-    });
+  });
 
-    it("returns empty when no spec source files changed", () => {
+  test("generateActionPlan_emptySpecsWhenNoSourceChanged", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "docs/docs/product.md", classification: "doc" }),
       ]);
@@ -140,9 +139,9 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.affectedSpecs).toHaveLength(0);
-    });
+  });
 
-    it("lists multiple changed sources for the same spec", () => {
+  test("generateActionPlan_multipleChangedSourcesSameSpec", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),
         makeFile({ path: "javascript/src/types/client.ts", classification: "type" }),
@@ -155,11 +154,9 @@ describe("generateActionPlan", () => {
         "javascript/src/routes/auth.ts",
         "javascript/src/types/client.ts",
       ]);
-    });
   });
 
-  describe("unmapped files", () => {
-    it("identifies unmapped non-route files", () => {
+  test("generateActionPlan_identifiesUnmappedFiles", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/middleware/cors.ts", classification: "unknown" }),
       ]);
@@ -167,9 +164,9 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.unmappedFiles).toContain("javascript/src/middleware/cors.ts");
-    });
+  });
 
-    it("filters out noise files", () => {
+  test("generateActionPlan_filtersNoiseFiles", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "tools/diff-analyzer/src/parser.ts", classification: "unknown" }),
         makeFile({ path: "package-lock.json", classification: "unknown" }),
@@ -179,11 +176,9 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.unmappedFiles).toHaveLength(0);
-    });
   });
 
-  describe("new controller detection", () => {
-    it("detects new unmapped Express controller", () => {
+  test("generateActionPlan_detectsNewExpressController", () => {
       const analysis = makeAnalysis([
         makeFile({
           path: "javascript/src/routes/notifications.ts",
@@ -196,9 +191,9 @@ describe("generateActionPlan", () => {
 
       expect(plan.hasNewController).toBe(true);
       expect(plan.unmappedFiles).toContain("javascript/src/routes/notifications.ts");
-    });
+  });
 
-    it("detects new unmapped Java controller", () => {
+  test("generateActionPlan_detectsNewJavaController", () => {
       const analysis = makeAnalysis([
         makeFile({
           path: "java/src/main/java/com/insurecrm/email/controller/NotificationController.java",
@@ -213,9 +208,9 @@ describe("generateActionPlan", () => {
       expect(plan.unmappedFiles).toContain(
         "java/src/main/java/com/insurecrm/email/controller/NotificationController.java"
       );
-    });
+  });
 
-    it("does not flag mapped controllers as new", () => {
+  test("generateActionPlan_noFlagForMappedControllers", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),
       ]);
@@ -223,11 +218,9 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.hasNewController).toBe(false);
-    });
   });
 
-  describe("real-world scenario: PR #21 (notifications controller)", () => {
-    it("produces correct plan for a new Express controller + app.ts change", () => {
+  test("generateActionPlan_newControllerPlusAppChange", () => {
       const analysis = makeAnalysis([
         makeFile({
           path: "javascript/src/routes/notifications.ts",
@@ -247,13 +240,9 @@ describe("generateActionPlan", () => {
 
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
-      // No mapped spec sources changed — affectedSpecs is empty
       expect(plan.affectedSpecs).toHaveLength(0);
-      // notifications.ts is unmapped → new controller detected
       expect(plan.hasNewController).toBe(true);
       expect(plan.unmappedFiles).toContain("javascript/src/routes/notifications.ts");
-      // app.ts is also unmapped
       expect(plan.unmappedFiles).toContain("javascript/src/app.ts");
-    });
   });
 });
