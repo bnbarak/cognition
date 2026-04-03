@@ -354,6 +354,27 @@ Before committing any annotation, verify:
 
 ---
 
+## PR Title Convention
+
+When the doc-update agent creates a docs PR, the title MUST follow this format:
+
+```
+[Docs Update]: {short topic} | PR {source-pr-numbers}
+```
+
+**Examples:**
+- `[Docs Update]: Claims controller annotations | PR 21`
+- `[Docs Update]: Auth flow + email endpoints | PR 14-15`
+- `[Docs Update]: COI controller onboarding | PR 6`
+- `[Docs Update]: Rate limiting + bulk tags | PR 5, 8`
+
+**Rules:**
+- `{short topic}` — 2-5 words describing what was documented (use domain language, not "updated docs")
+- `{source-pr-numbers}` — the code PR(s) that triggered this docs update. Use ranges (`14-15`) for consecutive PRs, commas (`5, 8`) for non-consecutive
+- Always include the `[Docs Update]:` prefix so these PRs are easy to filter in GitHub
+
+---
+
 ## Anti-Patterns to Avoid
 
 1. **Parrot summaries**: Don't write `summary: Update claim status` and `description: Updates the status of a claim`. The description must add new information.
