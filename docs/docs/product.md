@@ -1,8 +1,8 @@
 # InsureCRM — Product Overview
 
-<!-- doc-freshness: { "commit": "be06edb", "date": "2026-04-03", "updatedBy": "devin-ai-integration[bot]", "pr": 29 } -->
+<!-- doc-freshness: { "commit": "be06edb", "date": "2026-04-03", "updatedBy": "devin-ai-integration[bot]", "pr": 30 } -->
 
-!!! info "Last updated: 2026-04-03 | commit `be06edb` | by devin-ai-integration[bot] | PR #29"
+!!! info "Last updated: 2026-04-03 | commit `be06edb` | by devin-ai-integration[bot] | PR #30"
 
 ## What is InsureCRM?
 
