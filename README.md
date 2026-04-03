@@ -75,13 +75,3 @@ mkdocs serve
 # Output: docs/docs/specs/express-openapi.json
 #         docs/docs/specs/springboot-openapi.json
 ```
-
----
-
-## Key Design Decisions
-
-- **Annotations live with code.** OpenAPI docs are embedded as JSDoc / `@Operation` comments in the source files, not maintained separately. Any agent that reads the code can keep docs in sync.
-- **Specs are generated, not hand-written.** The `generate-openapi-specs.sh` script starts the servers, fetches live OpenAPI JSON, and commits it. The MkDocs OAD plugin renders specs into API reference pages automatically.
-- **Skills ground the agent.** Skill files provide concrete BAD/GOOD examples so the agent writes consistent, high-quality annotations instead of generic LLM filler.
-- **Freshness stamps track drift.** Every doc page carries a machine-readable timestamp showing when it was last updated, by whom, and from which PR.
-- **Stateless by design.** Each agent run is a fresh session. All persistent context comes from files in the repo (`domain-map.yaml`, skills, specs) and Devin Knowledge Notes.
