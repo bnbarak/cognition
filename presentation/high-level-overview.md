@@ -40,51 +40,80 @@ flowchart TD
 
 ---
 
-## 2. Reactive Agent Decision Tree
+## 2. Agent Figures Out What to Update
 
-The agent is **reactive** — it observes the action plan output and reacts to what it finds. No pre-planned workflow; each decision depends on the previous observation.
+The agent reads the action plan from the CLI and builds a work list. This is the **analysis phase** — no files are modified yet.
 
 ```mermaid
 flowchart TD
-    Start["Receive action plan\nfrom CLI"] --> HasSpecs{"affectedSpecs\nnon-empty?"}
+    Start["Receive action plan\nfrom CLI"] --> ReadMap["Read domain-map.yaml"]
+    ReadMap --> HasSpecs{"affectedSpecs\nnon-empty?"}
 
-    HasSpecs -->|"Yes"| ReadSources["Read changed source files"]
-    HasSpecs -->|"No"| CheckUnmapped{"unmappedFiles\nnon-empty?"}
+    HasSpecs -->|"Yes"| MarkSpecs["Mark specs for regeneration\n(only the affected ones)"]
+    HasSpecs -->|"No"| SkipSpecs["No spec work needed"]
 
-    ReadSources --> UpdateAnnotations["Update annotations\n(@openapi / @Operation)"]
-    UpdateAnnotations --> RegenSpecs["Regenerate only\naffected specs"]
-    RegenSpecs --> CheckUnmapped
+    MarkSpecs --> CheckUnmapped
+    SkipSpecs --> CheckUnmapped
 
-    CheckUnmapped -->|"Yes"| NewCtrl{"hasNewController?"}
+    CheckUnmapped{"unmappedFiles\nnon-empty?"} -->|"Yes"| NewCtrl{"hasNewController?"}
     CheckUnmapped -->|"No"| GroupConcerns
 
-    NewCtrl -->|"Yes"| Onboard["Onboard new controller:\n- Add annotations\n- Create API doc page\n- Update domain-map.yaml\n- Update mkdocs.yml nav"]
-    NewCtrl -->|"No"| ReviewUnmapped["Review unmapped files\nfor narrative doc impact"]
+    NewCtrl -->|"Yes"| PlanOnboard["Plan: onboard new controller\n(new doc page, domain-map entry,\nmkdocs.yml nav update)"]
+    NewCtrl -->|"No"| ReviewUnmapped["Flag unmapped files\nfor narrative review"]
 
-    Onboard --> GroupConcerns["Group remaining files\nby concern (using domain map)"]
+    PlanOnboard --> GroupConcerns
     ReviewUnmapped --> GroupConcerns
 
-    GroupConcerns --> ForEach{"For each\nconcern group"}
+    GroupConcerns["Group all files into\nconcern groups\n(using domain-map.yaml)"] --> TooMany{"> 7 groups?"}
 
-    ForEach --> ChoosePath{"API-affecting\nor narrative?"}
-    ChoosePath -->|"API (Path A)"| PathA["Update annotations\n→ regen specs → OAD renders"]
-    ChoosePath -->|"Narrative (Path B)"| PathB["Edit markdown docs\ndirectly"]
-    ChoosePath -->|"Both"| PathAB["Path A + Path B"]
+    TooMany -->|"Yes"| Bail["STOP: PR too complex\nReport to user"]
+    TooMany -->|"No"| Classify
 
-    PathA --> Confidence["Assess confidence\n(HIGH / MEDIUM / LOW)"]
-    PathB --> Confidence
-    PathAB --> Confidence
-
-    Confidence --> MoreGroups{"More concern\ngroups?"}
-    MoreGroups -->|"Yes"| ForEach
-    MoreGroups -->|"No"| Stamps["Update freshness stamps\non all touched pages"]
-
-    Stamps --> CreatePR["Create docs PR\nwith confidence label"]
+    Classify["For each group, classify:\nAPI-affecting? Narrative? Both?"] --> WorkList["Work list ready\n→ proceed to execution"]
 
     style Start fill:#e8f5e9
     style HasSpecs fill:#fff3e0
     style CheckUnmapped fill:#fff3e0
     style NewCtrl fill:#fff3e0
+    style TooMany fill:#fff3e0
+    style Bail fill:#ffcdd2
+    style WorkList fill:#e0f7fa
+```
+
+---
+
+## 3. Agent Executes Updates
+
+With the work list ready, the agent processes each concern group. This is the **execution phase** — files are read and modified.
+
+```mermaid
+flowchart TD
+    WorkList["Work list from\nanalysis phase"] --> ForEach{"Next concern\ngroup"}
+
+    ForEach --> ChoosePath{"Classified as?"}
+    ChoosePath -->|"API (Path A)"| ReadSkills["Read annotation-language\n+ framework skill"]
+    ChoosePath -->|"Narrative (Path B)"| ReadDocs["Read current doc pages"]
+    ChoosePath -->|"Both"| ReadBoth["Read skills + doc pages"]
+
+    ReadSkills --> WriteAnnotations["Update source code\nannotations"]
+    WriteAnnotations --> RegenSpecs["Regenerate only\naffected specs"]
+    RegenSpecs --> Confidence
+
+    ReadDocs --> EditMarkdown["Edit markdown docs\ndirectly"]
+    EditMarkdown --> Confidence
+
+    ReadBoth --> WriteAnnotations2["Update annotations"]
+    WriteAnnotations2 --> RegenSpecs2["Regenerate specs"]
+    RegenSpecs2 --> EditMarkdown2["Edit markdown docs"]
+    EditMarkdown2 --> Confidence
+
+    Confidence["Assess confidence\n(HIGH / MEDIUM / LOW)"] --> MoreGroups{"More concern\ngroups?"}
+    MoreGroups -->|"Yes"| ForEach
+    MoreGroups -->|"No"| Stamps["Update freshness stamps\non all touched pages"]
+
+    Stamps --> CreatePR["Create docs PR\nwith confidence label"]
+
+    style WorkList fill:#e8f5e9
     style ChoosePath fill:#fff3e0
     style MoreGroups fill:#fff3e0
     style CreatePR fill:#e0f7fa
@@ -92,7 +121,7 @@ flowchart TD
 
 ---
 
-## 3. Skills & Knowledge Base
+## 4. Skills & Knowledge Base
 
 The agent's context comes from two sources: **skill files** (in-repo, versioned) and **knowledge notes** (Devin cloud, org-scoped).
 
@@ -139,7 +168,7 @@ flowchart LR
 
 ---
 
-## 4. What's Deterministic vs. Agent Decision
+## 5. What's Deterministic vs. Agent Decision
 
 | Deterministic (CLI / Scripts) | Agent Decides (LLM) |
 |-------------------------------|---------------------|
