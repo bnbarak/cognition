@@ -49,39 +49,25 @@ The agent handles everything from there — analyzes the diff, updates docs, reg
 
 ---
 
-## Running Locally
+## What's in the Box
 
-### Express API (TypeScript)
+| Component | Purpose |
+|-----------|---------|
+| **Diff Analyzer CLI** | Parses PR diffs into structured JSON with a deterministic action plan |
+| **Domain Map** (`domain-map.yaml`) | Maps source files → doc pages → OpenAPI specs |
+| **Skills** | Grounded annotation patterns (Express JSDoc, Spring Boot, language quality) |
+| **Playbook** (`!doc-update`) | Orchestration prompt — the agent's full procedure |
+| **GitHub Actions trigger** | Auto-runs the agent on PR merge |
 
-```bash
-cd javascript && npm install && npm run dev
-# API:        http://localhost:3000
-# Swagger UI: http://localhost:3000/api-docs
-```
+---
 
-### Email Service (Java / Spring Boot)
+## Key Design Decisions
 
-```bash
-cd java && mvn spring-boot:run
-# API:        http://localhost:8080
-# Swagger UI: http://localhost:8080/swagger-ui/index.html
-```
+- **Annotations live with the code** — not in separate doc files. Any engineer (or agent) editing the code keeps docs in sync.
+- **Deterministic where possible, agentic where needed** — the CLI computes which specs to regenerate and which files are unmapped. The agent decides how to group concerns and write annotations.
+- **Confidence-based output** — HIGH auto-submits, MEDIUM flags for review, LOW creates a draft PR.
+- **Zero infrastructure** — no plugins, no CI config, no doc platform to maintain. Just Devin + your repo.
 
-### Documentation Site (MkDocs)
+---
 
-```bash
-cd docs
-pip install mkdocs mkdocs-shadcn neoteroi-mkdocs pymdown-extensions
-mkdocs serve
-# Docs: http://localhost:8000
-```
-
-**Public deployment:** [https://crm-api-generator-iymkmkjb.devinapps.com](https://crm-api-generator-iymkmkjb.devinapps.com)
-
-### Generate OpenAPI Specs
-
-```bash
-./scripts/generate-openapi-specs.sh
-# Output: docs/docs/specs/express-openapi.json
-#         docs/docs/specs/springboot-openapi.json
-```
+*For running the demo services locally, see [RUNNING-DEMO.md](RUNNING-DEMO.md).*
