@@ -309,7 +309,8 @@ router.get("/:notificationId", (req: Request<{ notificationId: string }>, res: R
  *     summary: Mark a notification as read
  *     description: >
  *       Sets the notification's read flag to true and records the current timestamp
- *       as readAt. Idempotent — marking an already-read notification has no adverse effect.
+ *       as readAt. Calling this on an already-read notification updates the readAt
+ *       timestamp to the current time.
  *     tags: [Notifications]
  *     operationId: markNotificationRead
  *     parameters:
