@@ -158,61 +158,6 @@ describe("generateActionPlan", () => {
     });
   });
 
-  describe("concernGroups", () => {
-    it("merges doc pages that share changed files into one group", () => {
-      const analysis = makeAnalysis([
-        makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),
-      ]);
-
-      const plan = generateActionPlan(analysis, DOMAIN_MAP);
-
-      // auth.ts maps to index.md, product.md, and core-api.md — should merge
-      expect(plan.concernGroups.length).toBeGreaterThanOrEqual(1);
-      const group = plan.concernGroups[0];
-      expect(group.docs).toContain("docs/docs/index.md");
-      expect(group.docs).toContain("docs/docs/product.md");
-      expect(group.docs).toContain("docs/docs/api/core-api.md");
-    });
-
-    it("assigns path 'A' for API-only changes", () => {
-      const analysis = makeAnalysis([
-        makeFile({ path: "javascript/src/types/client.ts", classification: "type" }),
-      ]);
-
-      const plan = generateActionPlan(analysis, DOMAIN_MAP);
-
-      const group = plan.concernGroups.find((g) => g.changedFiles.includes("javascript/src/types/client.ts"));
-      expect(group).toBeDefined();
-      expect(group!.path).toBe("A");
-    });
-
-    it("assigns path 'both' when routes affect narrative and API docs", () => {
-      const analysis = makeAnalysis([
-        makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),
-      ]);
-
-      const plan = generateActionPlan(analysis, DOMAIN_MAP);
-
-      const group = plan.concernGroups.find((g) => g.changedFiles.includes("javascript/src/routes/auth.ts"));
-      expect(group).toBeDefined();
-      // auth.ts maps to index.md (narrative) + core-api.md (API) → "both"
-      expect(group!.path).toBe("both");
-    });
-
-    it("tags specs on concern groups correctly", () => {
-      const analysis = makeAnalysis([
-        makeFile({ path: "javascript/src/routes/clients.ts", classification: "route" }),
-      ]);
-
-      const plan = generateActionPlan(analysis, DOMAIN_MAP);
-
-      const group = plan.concernGroups.find((g) => g.changedFiles.includes("javascript/src/routes/clients.ts"));
-      expect(group).toBeDefined();
-      expect(group!.specs).toContain("docs/docs/specs/express-openapi.json");
-      expect(group!.specs).not.toContain("docs/docs/specs/springboot-openapi.json");
-    });
-  });
-
   describe("unmapped files", () => {
     it("identifies unmapped non-route files", () => {
       const analysis = makeAnalysis([
@@ -234,7 +179,6 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.unmappedFiles).toHaveLength(0);
-      expect(plan.concernGroups).toHaveLength(0);
     });
   });
 
@@ -251,14 +195,7 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.hasNewController).toBe(true);
-      // Should create a concern group for the new controller
-      const group = plan.concernGroups.find((g) =>
-        g.changedFiles.includes("javascript/src/routes/notifications.ts")
-      );
-      expect(group).toBeDefined();
-      expect(group!.name).toBe("notifications");
-      expect(group!.path).toBe("both");
-      expect(group!.specs).toContain("docs/docs/specs/express-openapi.json");
+      expect(plan.unmappedFiles).toContain("javascript/src/routes/notifications.ts");
     });
 
     it("detects new unmapped Java controller", () => {
@@ -273,11 +210,9 @@ describe("generateActionPlan", () => {
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
       expect(plan.hasNewController).toBe(true);
-      const group = plan.concernGroups.find((g) =>
-        g.changedFiles.includes("java/src/main/java/com/insurecrm/email/controller/NotificationController.java")
+      expect(plan.unmappedFiles).toContain(
+        "java/src/main/java/com/insurecrm/email/controller/NotificationController.java"
       );
-      expect(group).toBeDefined();
-      expect(group!.specs).toContain("docs/docs/specs/springboot-openapi.json");
     });
 
     it("does not flag mapped controllers as new", () => {
@@ -312,16 +247,13 @@ describe("generateActionPlan", () => {
 
       const plan = generateActionPlan(analysis, DOMAIN_MAP);
 
-      // Only Express spec should be affected — NOT Spring Boot
+      // No mapped spec sources changed — affectedSpecs is empty
       expect(plan.affectedSpecs).toHaveLength(0);
       // notifications.ts is unmapped → new controller detected
       expect(plan.hasNewController).toBe(true);
-
-      // There should be a group for the new controller
-      const newGroup = plan.concernGroups.find((g) => g.name === "notifications");
-      expect(newGroup).toBeDefined();
-      expect(newGroup!.specs).toContain("docs/docs/specs/express-openapi.json");
-      expect(newGroup!.specs).not.toContain("docs/docs/specs/springboot-openapi.json");
+      expect(plan.unmappedFiles).toContain("javascript/src/routes/notifications.ts");
+      // app.ts is also unmapped
+      expect(plan.unmappedFiles).toContain("javascript/src/app.ts");
     });
   });
 });

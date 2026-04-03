@@ -18,5 +18,4 @@ export type {
   DomainMapSource,
   ActionPlan,
   AffectedSpec,
-  ConcernGroup,
 } from "./types";

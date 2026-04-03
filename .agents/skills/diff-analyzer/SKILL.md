@@ -101,17 +101,9 @@ interface ActionPlan {
     generator: string;   // e.g. "scripts/generate-openapi-specs.sh"
     changedSources: string[];  // Source files that triggered this
   }>;
-  /** Pre-grouped concern groups with doc pages and update paths */
-  concernGroups: Array<{
-    name: string;          // e.g. "core-api", "notifications"
-    path: "A" | "B" | "both";  // Update path for this group
-    docs: string[];        // Doc pages that need updating
-    changedFiles: string[];  // Source files in this group
-    specs: string[];       // Specs tagged on this group
-  }>;
-  /** Files that don't map to any domain-map entry */
+  /** Files that don't map to any domain-map entry (noise already filtered) */
   unmappedFiles: string[];
-  /** Whether any concern group involves a new unmapped controller */
+  /** Whether any unmapped file looks like a new controller */
   hasNewController: boolean;
 }
 ```
@@ -140,10 +132,10 @@ interface ActionPlan {
 ## How the Agent Should Use This
 
 1. Run the CLI with `--pr` or `--branch` **and `--domain-map`** to get the structured JSON with a pre-computed action plan
-2. Read `actionPlan.concernGroups` — these are your pre-grouped concerns with update paths already determined
-3. Read `actionPlan.affectedSpecs` — only regenerate these specs (skip the rest)
-4. Check `actionPlan.hasNewController` — if true, create new doc pages and update `domain-map.yaml`
-5. Review `actionPlan.unmappedFiles` — these may need manual doc impact assessment
+2. Read `actionPlan.affectedSpecs` — only regenerate these specs (skip the rest)
+3. Check `actionPlan.hasNewController` — if true, create new doc pages and update `domain-map.yaml`
+4. Review `actionPlan.unmappedFiles` — these may need manual doc impact assessment
+5. Read `docs/domain-map.yaml` and group concerns yourself based on the file-to-doc mappings
 6. The `pr` summary flags (`hasRouteChanges`, `hasSpecChanges`, etc.) provide quick scope overview
 
 **Without `--domain-map`:** The CLI outputs only the base `pr` + `files` JSON (no action plan). The agent must manually cross-reference the domain map.

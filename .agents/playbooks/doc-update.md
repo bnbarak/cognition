@@ -53,18 +53,26 @@ The output JSON now includes an `actionPlan` field with:
 
 See `.agents/skills/diff-analyzer/SKILL.md` for full output shape and all options.
 
-### Step 3: Read the Action Plan
+### Step 3: Read Domain Map & Action Plan
 
-The `actionPlan` in the CLI output replaces manual noise filtering, domain-map cross-referencing, and concern grouping. Read it and follow its instructions:
+Read `docs/domain-map.yaml` from the repo — this is the source of truth for code → docs → specs mapping. Then read the `actionPlan` from the CLI output:
 
-1. **If `actionPlan.concernGroups` is empty AND `actionPlan.unmappedFiles` is empty** → **STOP**. Report "No documentation impact detected" and exit.
-2. **If `actionPlan.concernGroups` has more than 7 entries** → **STOP**. Report that the PR is too complex.
-3. **For each concern group**, the `path` field tells you which update path to follow: `"A"` (annotations → specs), `"B"` (narrative markdown), or `"both"`.
-4. **`actionPlan.affectedSpecs`** tells you exactly which specs to regenerate — skip specs not in this list.
-5. **`actionPlan.hasNewController`** tells you if you need to create new doc pages and update `domain-map.yaml`.
-6. **`actionPlan.unmappedFiles`** lists non-noise files that don't map to any domain-map entry — review these for potential doc impact.
+1. **`actionPlan.affectedSpecs`** tells you exactly which specs need regeneration — skip specs not in this list.
+2. **`actionPlan.unmappedFiles`** lists non-noise files that don't map to any domain-map entry — review these for potential doc impact.
+3. **`actionPlan.hasNewController`** tells you if you need to create new doc pages and update `domain-map.yaml`.
 
-**You do NOT need to manually filter noise or group by concern.** The CLI has already done this deterministically.
+**Noise filtering is done for you** — test files, lock files, CI/CD files, and the diff-analyzer itself are already excluded. You still decide how to group concerns and which update path (A/B/both) to use based on the domain map.
+
+### Step 4: Filter Noise & Group by Concern
+
+Use `actionPlan.unmappedFiles` to identify files that need manual review. Then group the remaining files into concern groups using `docs/domain-map.yaml`:
+
+1. Cross-reference each file against `pages[].sources[].file` and `specs[].sources[].file`
+2. Group files by the `doc` page they map to
+3. If a file is NOT in the domain map and NOT in `unmappedFiles`, it was already filtered as noise
+4. If `actionPlan.hasNewController` is true, create a new group for the unmapped controller
+
+**Bail-out rule:** If you identify more than 7 concern-groups → **STOP**. Report that the PR is too complex.
 
 ### Step 6: Update Docs for Each Concern-Group
 

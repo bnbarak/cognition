@@ -33,11 +33,6 @@ describe("CLI --domain-map integration", () => {
       expect(Array.isArray(plan.affectedSpecs)).toBe(true);
     });
 
-    it("has concernGroups array", () => {
-      const plan = result.actionPlan as Record<string, unknown>;
-      expect(Array.isArray(plan.concernGroups)).toBe(true);
-    });
-
     it("has unmappedFiles array", () => {
       const plan = result.actionPlan as Record<string, unknown>;
       expect(Array.isArray(plan.unmappedFiles)).toBe(true);
@@ -71,14 +66,6 @@ describe("CLI --domain-map integration", () => {
       expect(springSpec).toBeUndefined();
     });
 
-    it("concern groups have valid path values", () => {
-      const plan = result.actionPlan as {
-        concernGroups: Array<{ path: string }>;
-      };
-      for (const group of plan.concernGroups) {
-        expect(["A", "B", "both"]).toContain(group.path);
-      }
-    });
   });
 
   describe("without --domain-map flag", () => {
@@ -127,16 +114,12 @@ describe("CLI --domain-map integration", () => {
       expect(plan.hasNewController).toBe(true);
     });
 
-    it("creates a concern group for the new controller", () => {
+    it("lists new controller in unmappedFiles", () => {
       const plan = result.actionPlan as {
-        concernGroups: Array<{ name: string; path: string; specs: string[] }>;
+        unmappedFiles: string[];
       };
-      // diff6 adds a new controller — should have a group for it
-      expect(plan.concernGroups.length).toBeGreaterThan(0);
-      const newGroup = plan.concernGroups.find(
-        (g) => g.path === "both" || g.path === "A"
-      );
-      expect(newGroup).toBeDefined();
+      // diff6 adds a new controller — should appear in unmappedFiles
+      expect(plan.unmappedFiles.length).toBeGreaterThan(0);
     });
   });
 });
