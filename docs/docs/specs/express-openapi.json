@@ -1,4 +1,8 @@
 {
+    "_generated": {
+        "warning": "AUTO-GENERATED FILE — DO NOT EDIT. Re-generate with: ./scripts/generate-openapi-specs.sh",
+        "script": "scripts/generate-openapi-specs.sh"
+    },
     "openapi": "3.0.3",
     "info": {
         "title": "InsureCRM API",

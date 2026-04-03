@@ -73,10 +73,26 @@ wait_for_server "http://localhost:$SPRINGBOOT_PORT/api-docs" "Spring Boot" 120
 echo ""
 echo "Fetching OpenAPI specs..."
 
-curl -sf "http://localhost:$EXPRESS_PORT/openapi.json" | python3 -m json.tool > "$SPECS_DIR/express-openapi.json"
+# Inject _generated metadata and pretty-print
+GEN_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+GEN_NOTE="AUTO-GENERATED FILE — DO NOT EDIT. Re-generate with: ./scripts/generate-openapi-specs.sh"
+
+curl -sf "http://localhost:$EXPRESS_PORT/openapi.json" \
+  | python3 -c "
+import json, sys
+spec = json.load(sys.stdin)
+spec['_generated'] = {'warning': '$GEN_NOTE', 'date': '$GEN_DATE', 'script': 'scripts/generate-openapi-specs.sh'}
+json.dump(spec, sys.stdout, indent=4)
+" > "$SPECS_DIR/express-openapi.json"
 echo "  Saved Express spec to docs/docs/specs/express-openapi.json"
 
-curl -sf "http://localhost:$SPRINGBOOT_PORT/api-docs" | python3 -m json.tool > "$SPECS_DIR/springboot-openapi.json"
+curl -sf "http://localhost:$SPRINGBOOT_PORT/api-docs" \
+  | python3 -c "
+import json, sys
+spec = json.load(sys.stdin)
+spec['_generated'] = {'warning': '$GEN_NOTE', 'date': '$GEN_DATE', 'script': 'scripts/generate-openapi-specs.sh'}
+json.dump(spec, sys.stdout, indent=4)
+" > "$SPECS_DIR/springboot-openapi.json"
 echo "  Saved Spring Boot spec to docs/docs/specs/springboot-openapi.json"
 
 echo ""
