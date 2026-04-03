@@ -170,24 +170,81 @@ After processing each group, record:
    ```bash
    git add docs/ javascript/ java/ docs/domain-map.yaml
    ```
-3. Commit with a descriptive message:
+3. Commit with a descriptive message following this format:
    ```bash
-   git commit -m "docs: update documentation for PR#<number>
+   git commit -m "docs: <short topic> for PR#<number> — <controller/feature>
    
    Concern-groups processed:
    - <concern>: <confidence> [Path <A|B>] — <summary>
-   - <concern>: <confidence> [Path <A|B>] — <summary>
-   ..."
+   - <concern>: <confidence> [Path <A|B>] — <summary>"
    ```
+   Examples:
+   - `docs: add annotations for PR#21 — Notifications controller`
+   - `docs: update auth flow docs for PR#15 — login rate limiting`
 4. Push and create a PR targeting the original PR's branch (or main, depending on workflow):
    ```bash
    git push origin docs/<pr-branch>
    ```
-5. Create the PR using the git_create_pr tool
+5. Create the PR using the git_create_pr tool with the **structured PR description** below
 6. **Add the `agent-artifact` label** to the PR so it's identifiable as agent-generated output:
    ```bash
    gh pr edit <pr-number> --add-label "agent-artifact" --repo bnbarak/cognition
    ```
+
+#### PR Description Template
+
+Every docs PR MUST use this structure. Fill in each section based on your actual changes:
+
+```markdown
+## Confidence
+
+**Overall: <HIGH|MEDIUM|LOW>**
+
+| Concern Group | Confidence | Reasoning |
+|--------------|------------|----------|
+| <concern> | HIGH/MEDIUM/LOW | <why — e.g. "mechanical annotation, single controller"> |
+
+## API References
+
+- **Specs regenerated:** `express-openapi.json` / `springboot-openapi.json` / none
+- **Endpoints added/changed:**
+  - `POST /api/<path>` — <what changed>
+  - `GET /api/<path>` — <what changed>
+- **Component schemas added/changed:** `<SchemaName>`, `<SchemaName>`
+- **Side effects:** <any unrelated spec changes picked up during regeneration, or "none">
+
+## Conceptual Docs
+
+Narrative page updates (or "No conceptual doc changes"):
+
+- `docs/docs/index.md` — <what changed, e.g. "added Notifications section (#5), updated endpoint count">
+- `docs/docs/product.md` — <what changed>
+- `docs/docs/authentication.md` — <what changed, if applicable>
+
+## Docs
+
+- **domain-map.yaml:** <what was added/changed, or "no changes">
+- **Freshness stamps:** updated on <list of files>
+- **New pages created:** <list, or "none">
+
+---
+
+### Review Guide (required for MEDIUM and LOW confidence)
+
+**Why this needs review:** <specific reasons>
+
+**Where to focus:**
+- `<file>:<lines>` — <what to check>
+
+**Judgment calls:**
+- <any decisions you made that a human should verify>
+```
+
+**Rules:**
+- All 4 sections (Confidence, API References, Conceptual Docs, Docs) are **always required**, even if a section says "no changes".
+- The Review Guide section is **required for MEDIUM and LOW** confidence, optional for HIGH.
+- Be specific — don't say "updated docs", say exactly which files and what changed.
+- List every endpoint that was added/changed in API References, not just a count.
 
 ### Step 8: Assess Confidence and Decide
 
@@ -200,6 +257,8 @@ Calculate overall confidence = **lowest confidence across all groups**.
 | **LOW** | Submit the PR as draft. Add label `docs-needs-review`. Comment: "Docs update drafted with low confidence. Human review required for PR#X. Uncertain areas: [list LOW groups with reasons]." |
 
 **Note:** The `agent-artifact` label (added in Step 7) is always applied regardless of confidence level. The confidence labels above are additive.
+
+**Note:** The PR description template (from Step 7) already includes the Review Guide section. For MEDIUM and LOW confidence, you MUST fill it in with specific reasons, files/lines to focus on, and any judgment calls. For HIGH confidence, you may omit the Review Guide section or keep it brief.
 
 ### Step 9: Report
 
