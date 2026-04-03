@@ -4,6 +4,14 @@ An automated system that keeps API documentation in sync with code changes. When
 
 Built for internal teams tired of outdated API docs.
 
+**Live docs:** [https://crm-api-generator-iymkmkjb.devinapps.com](https://crm-api-generator-iymkmkjb.devinapps.com)
+
+---
+
+## How to Install
+
+You don't. Devin works out of the box in your codebase — just like any other engineer. Point it at a repo, give it a PR, and it handles the rest. No plugins, no CI config, no infrastructure to maintain.
+
 ---
 
 ## How the Agent Works
@@ -67,6 +75,8 @@ pip install mkdocs mkdocs-shadcn neoteroi-mkdocs pymdown-extensions
 mkdocs serve
 # Docs: http://localhost:8000
 ```
+
+**Public deployment:** [https://crm-api-generator-iymkmkjb.devinapps.com](https://crm-api-generator-iymkmkjb.devinapps.com)
 
 ### Generate OpenAPI Specs
 
