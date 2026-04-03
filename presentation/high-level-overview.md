@@ -1,39 +1,38 @@
-# Doc-Update Agent — Flow Map
+# Doc-Update Agent — Overview
 
-## System Flow
+## 1. System Flow (High Level)
 
 ```mermaid
 flowchart TD
     Engineer["👤 Engineer\nMerges a code PR"]
-    Engineer -->|"Triggers"| Devin["🤖 Devin Agent\n(doc-update playbook)"]
+    Engineer -->|"Triggers"| Agent["🤖 Devin Agent\n(Reactive — see below)"]
 
-    Devin -->|"Runs"| CLI["⚙️ Diff Analyzer CLI\nDeterministic analysis"]
-    CLI -->|"Reads"| DomainMap["📋 Domain Map\n(domain-map.yaml)"]
-    CLI -->|"Outputs"| ActionPlan["📊 Action Plan\naffectedSpecs, unmappedFiles,\nhasNewController"]
+    Agent -->|"Runs"| CLI["⚙️ Diff Analyzer CLI"]
+    CLI -->|"Reads"| DomainMap["📋 Domain Map"]
+    CLI -->|"Outputs"| ActionPlan["📊 Action Plan"]
+    ActionPlan -->|"Informs"| Agent
 
-    ActionPlan -->|"Informs"| Devin
+    Agent -->|"Reads"| Skills["📖 Skills & Knowledge\n(see below)"]
+    Agent -->|"Updates"| Code["✏️ Source Code\nAnnotations"]
+    Agent -->|"Edits"| Docs["📄 Narrative Docs"]
 
-    Devin -->|"Reads"| Skills["📖 Skill Files\nAnnotation language,\nExpress/Java patterns"]
-    Devin -->|"Updates"| Annotations["✏️ Source Code Annotations\n@openapi JSDoc, @Operation"]
-    Devin -->|"Edits"| Docs["📄 Narrative Docs\nindex, product, auth pages"]
+    Code -->|"Feeds"| SpecGen["⚙️ Spec Generator"]
+    SpecGen -->|"Produces"| Specs["📦 OpenAPI Specs"]
+    Specs -->|"Rendered by"| OAD["🔌 MkDocs OAD"]
 
-    Annotations -->|"Feeds"| SpecGen["⚙️ Spec Generator Script\n(generate-openapi-specs.sh)"]
-    SpecGen -->|"Produces"| Specs["📦 OpenAPI Specs\nexpress-openapi.json,\nspringboot-openapi.json"]
-    Specs -->|"Rendered by"| OAD["🔌 MkDocs OAD Plugin\nAuto-generates API reference pages"]
-
-    Devin -->|"Creates"| DocsPR["📬 Docs PR\nWith confidence label"]
-    DocsPR -->|"Reviewed by"| Reviewer["👤 Reviewer\n(if not HIGH confidence)"]
+    Agent -->|"Creates"| DocsPR["📬 Docs PR"]
+    DocsPR -->|"Reviewed by"| Reviewer["👤 Reviewer"]
 
     style Engineer fill:#e3f2fd
     style Reviewer fill:#e3f2fd
-    style Devin fill:#fff3e0
+    style Agent fill:#fff3e0
     style CLI fill:#e8f5e9
     style SpecGen fill:#e8f5e9
     style OAD fill:#e8f5e9
     style DomainMap fill:#f3e5f5
     style Skills fill:#f3e5f5
     style ActionPlan fill:#f3e5f5
-    style Annotations fill:#fce4ec
+    style Code fill:#fce4ec
     style Docs fill:#fce4ec
     style Specs fill:#fce4ec
     style DocsPR fill:#e0f7fa
@@ -41,22 +40,106 @@ flowchart TD
 
 ---
 
-## Stakeholder Roles
+## 2. Reactive Agent Decision Tree
 
-| Stakeholder | Role | When Involved |
-|-------------|------|---------------|
-| **Engineer** | Merges code PRs that change API endpoints or business logic | Triggers the agent; reviews docs PR if confidence is MEDIUM/LOW |
-| **Devin Agent** | Orchestrates the full flow — reads analysis, writes annotations & docs, creates PR | Runs the playbook end-to-end |
-| **Diff Analyzer CLI** | Pre-computes what changed and what needs updating (deterministic) | Called by agent early on; outputs structured JSON with action plan |
-| **Domain Map** | Source of truth mapping code files → doc pages → specs | Read by CLI and agent; updated by agent when new controllers appear |
-| **Skill Files** | Define writing style, annotation patterns, and domain-map rules | Read by agent before writing any content |
-| **Spec Generator Script** | Starts servers, fetches live OpenAPI specs, saves to disk | Run by agent only for specs listed in affectedSpecs |
-| **MkDocs OAD Plugin** | Auto-renders API reference pages from OpenAPI spec files | Runs at build time — no manual work needed |
-| **Reviewer** | Human who reviews the docs PR when confidence is not HIGH | Only involved when agent flags uncertainty |
+The agent is **reactive** — it observes the action plan output and reacts to what it finds. No pre-planned workflow; each decision depends on the previous observation.
+
+```mermaid
+flowchart TD
+    Start["Receive action plan\nfrom CLI"] --> HasSpecs{"affectedSpecs\nnon-empty?"}
+
+    HasSpecs -->|"Yes"| ReadSources["Read changed source files"]
+    HasSpecs -->|"No"| CheckUnmapped{"unmappedFiles\nnon-empty?"}
+
+    ReadSources --> UpdateAnnotations["Update annotations\n(@openapi / @Operation)"]
+    UpdateAnnotations --> RegenSpecs["Regenerate only\naffected specs"]
+    RegenSpecs --> CheckUnmapped
+
+    CheckUnmapped -->|"Yes"| NewCtrl{"hasNewController?"}
+    CheckUnmapped -->|"No"| GroupConcerns
+
+    NewCtrl -->|"Yes"| Onboard["Onboard new controller:\n- Add annotations\n- Create API doc page\n- Update domain-map.yaml\n- Update mkdocs.yml nav"]
+    NewCtrl -->|"No"| ReviewUnmapped["Review unmapped files\nfor narrative doc impact"]
+
+    Onboard --> GroupConcerns["Group remaining files\nby concern (using domain map)"]
+    ReviewUnmapped --> GroupConcerns
+
+    GroupConcerns --> ForEach{"For each\nconcern group"}
+
+    ForEach --> ChoosePath{"API-affecting\nor narrative?"}
+    ChoosePath -->|"API (Path A)"| PathA["Update annotations\n→ regen specs → OAD renders"]
+    ChoosePath -->|"Narrative (Path B)"| PathB["Edit markdown docs\ndirectly"]
+    ChoosePath -->|"Both"| PathAB["Path A + Path B"]
+
+    PathA --> Confidence["Assess confidence\n(HIGH / MEDIUM / LOW)"]
+    PathB --> Confidence
+    PathAB --> Confidence
+
+    Confidence --> MoreGroups{"More concern\ngroups?"}
+    MoreGroups -->|"Yes"| ForEach
+    MoreGroups -->|"No"| Stamps["Update freshness stamps\non all touched pages"]
+
+    Stamps --> CreatePR["Create docs PR\nwith confidence label"]
+
+    style Start fill:#e8f5e9
+    style HasSpecs fill:#fff3e0
+    style CheckUnmapped fill:#fff3e0
+    style NewCtrl fill:#fff3e0
+    style ChoosePath fill:#fff3e0
+    style MoreGroups fill:#fff3e0
+    style CreatePR fill:#e0f7fa
+```
 
 ---
 
-## What's Deterministic vs. Agent Decision
+## 3. Skills & Knowledge Base
+
+The agent's context comes from two sources: **skill files** (in-repo, versioned) and **knowledge notes** (Devin cloud, org-scoped).
+
+```mermaid
+flowchart LR
+    subgraph Skills["📖 Skill Files (in repo)"]
+        direction TB
+        S1["annotation-language\nWriting style & quality\nstandards for all annotations"]
+        S2["express-openapi\nJSDoc @openapi structural\npatterns (TypeScript)"]
+        S3["java-openapi\n@Operation / @Schema\npatterns (Spring Boot)"]
+        S4["update-domain-mapping\nRules for maintaining\ndomain-map.yaml"]
+        S5["diff-analyzer\nCLI usage, output shape,\nall flags & options"]
+    end
+
+    subgraph Knowledge["🧠 Knowledge Notes (Devin cloud)"]
+        direction TB
+        K1["Domain Mapping\nWhere domain-map.yaml lives,\nhow to read it"]
+    end
+
+    subgraph Config["📋 Config Files (in repo)"]
+        direction TB
+        C1["domain-map.yaml\nCode → docs → specs\nmapping (source of truth)"]
+        C2["doc-update playbook\nMain orchestration prompt\n(9 steps)"]
+    end
+
+    Agent["🤖 Devin Agent"] -->|"Reads before\nwriting annotations"| S1
+    Agent -->|"Reads for\nExpress patterns"| S2
+    Agent -->|"Reads for\nJava patterns"| S3
+    Agent -->|"Reads when updating\ndomain map"| S4
+    Agent -->|"Reads for\nCLI reference"| S5
+    Agent -->|"Reads for\nrepo context"| K1
+    Agent -->|"Uses as compass\nfor all decisions"| C1
+    Agent -->|"Follows step\nby step"| C2
+
+    style Agent fill:#fff3e0
+    style Skills fill:#e8f5e9
+    style Knowledge fill:#e3f2fd
+    style Config fill:#f3e5f5
+```
+
+**Skill files** are read by the agent at specific moments during execution — they define _how_ to write, not _what_ to write. The agent reads annotation-language first (quality bar), then the relevant framework skill (Express or Java) for structural patterns.
+
+**Knowledge notes** provide org-level context that persists across sessions. Currently minimal (just domain-map location), but designed to grow as the system handles more repos.
+
+---
+
+## 4. What's Deterministic vs. Agent Decision
 
 | Deterministic (CLI / Scripts) | Agent Decides (LLM) |
 |-------------------------------|---------------------|
