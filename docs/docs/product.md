@@ -56,6 +56,15 @@ Two-way email built into the CRM — send tracked outbound emails and receive in
 - Tag-based triage (e.g. `claim`, `inquiry`, `renewal`, `urgent`)
 - Paginated inbox with unread count
 
+### Notifications
+
+Track and manage client notifications. Each notification has a type (claim update, policy renewal, payment due, document request, or general), priority level (low, medium, high, urgent), and read status.
+
+- **Create notifications** — link to a client with type, priority, and optional metadata
+- **Filter & paginate** — filter by client, type, priority, or read status
+- **Bulk read** — mark all notifications for a client as read in one call
+- **Delete** — remove individual notifications
+
 ### Authentication & Access Control
 
 Secure, role-based access using JWT tokens. Three roles with distinct permission sets.
@@ -76,11 +85,11 @@ InsureCRM follows a two-service architecture:
 
 ### Core API (TypeScript / Express — port 3000)
 
-Handles identity, client data, and policy management.
+Handles identity, client data, policy management, and client notifications.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+| Auth, Clients, COI, Notifications | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, client notifications |
 
 See: [Core API Reference](api/core-api.md)
 

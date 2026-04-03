@@ -10,11 +10,11 @@ Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platfor
 
 ## System at a Glance
 
-InsureCRM is composed of **two backend services** and **five controllers**, each handling a distinct concern:
+InsureCRM is composed of **two backend services** and **six controllers**, each handling a distinct concern:
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
-| **Core API** (TypeScript / Express) | [Auth, Clients, COI](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation | `/api/auth`, `/api/clients`, `/api/coi` | 3000 |
+| **Core API** (TypeScript / Express) | [Auth, Clients, COI, Notifications](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation, client notifications | `/api/auth`, `/api/clients`, `/api/coi`, `/api/notifications` | 3000 |
 | **Email Service** (Java / Spring Boot) | [Send Email, Receive Email](api/email-api.md) | Outbound email dispatch, inbound email processing | `/api/emails/send`, `/api/emails/inbox` | 8080 |
 
 ---
@@ -64,6 +64,17 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 - Look up a certificate by certificate number
 - Verify certificate authenticity
 - Revoke a certificate when a policy is cancelled
+
+See: [Core API Reference](api/core-api.md)
+
+### 6. Notifications (`/api/notifications`)
+
+Manages client notifications within the CRM. Agents can create, list, filter, and manage read status of notifications tied to specific clients.
+
+- Create notifications with type, priority, and metadata
+- List notifications with filtering by client, type, read status, and priority
+- Mark individual notifications or all client notifications as read
+- Delete notifications
 
 See: [Core API Reference](api/core-api.md)
 
