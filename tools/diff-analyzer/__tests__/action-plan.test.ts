@@ -210,6 +210,21 @@ describe("generateActionPlan", () => {
       );
   });
 
+  test("generateActionPlan_noFlagForModifiedUnmappedController", () => {
+      const analysis = makeAnalysis([
+        makeFile({
+          path: "javascript/src/routes/legacy.ts",
+          status: "modified",
+          classification: "route",
+        }),
+      ]);
+
+      const plan = generateActionPlan(analysis, DOMAIN_MAP);
+
+      expect(plan.hasNewController).toBe(false);
+      expect(plan.unmappedFiles).toContain("javascript/src/routes/legacy.ts");
+  });
+
   test("generateActionPlan_noFlagForMappedControllers", () => {
       const analysis = makeAnalysis([
         makeFile({ path: "javascript/src/routes/auth.ts", classification: "route" }),

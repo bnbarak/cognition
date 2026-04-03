@@ -89,10 +89,13 @@ export function generateActionPlan(
   const affectedSpecs = computeAffectedSpecs(meaningfulFiles, domainMap);
   const unmappedFiles = computeUnmappedFiles(meaningfulFiles, domainMap);
 
-  const hasNewController = unmappedFiles.some(
+  const unmappedPathSet = new Set(unmappedFiles);
+  const hasNewController = meaningfulFiles.some(
     (f) =>
-      (f.startsWith("javascript/src/routes/") && f.endsWith(".ts")) ||
-      (f.includes("/controller/") && f.endsWith(".java"))
+      f.status === "added" &&
+      unmappedPathSet.has(f.path) &&
+      ((f.path.startsWith("javascript/src/routes/") && f.path.endsWith(".ts")) ||
+        (f.path.includes("/controller/") && f.path.endsWith(".java")))
   );
 
   return {
