@@ -80,7 +80,7 @@ Handles identity, client data, and policy management.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI, Notifications | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, client notifications |
+| Auth, Clients, COI, Claims, Notifications | 26+ | Login, register, tokens, client CRUD, policy management, COI generation, claims management, client notifications |
 
 See: [Core API Reference](api/core-api.md)
 

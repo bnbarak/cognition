@@ -10,11 +10,11 @@ Welcome to the **InsureCRM** developer documentation. InsureCRM is a CRM platfor
 
 ## System at a Glance
 
-InsureCRM is composed of **two backend services** and **six controllers**, each handling a distinct concern:
+InsureCRM is composed of **two backend services** and **seven controllers**, each handling a distinct concern:
 
 | Service | Controller | Concern | Base Path | Port |
 |---------|-----------|---------|-----------|------|
-| **Core API** (TypeScript / Express) | [Auth, Clients, COI, Notifications](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation, client notifications | `/api/auth`, `/api/clients`, `/api/coi`, `/api/notifications` | 3000 |
+| **Core API** (TypeScript / Express) | [Auth, Clients, COI, Claims, Notifications](api/core-api.md) | Identity, login, tokens, client CRUD, policy management, COI generation, claims management, client notifications | `/api/auth`, `/api/clients`, `/api/coi`, `/api/claims`, `/api/notifications` | 3000 |
 | **Email Service** (Java / Spring Boot) | [Send Email, Receive Email](api/email-api.md) | Outbound email dispatch, inbound email processing | `/api/emails/send`, `/api/emails/inbox` | 8080 |
 
 ---
@@ -67,7 +67,18 @@ Generates Certificates of Insurance (COI) from policy data. Agents can create, l
 
 See: [Core API Reference](api/core-api.md)
 
-### 5. Notifications (`/api/notifications`)
+### 5. Claims Management (`/api/claims`)
+
+Manages insurance claims filing, tracking, and adjuster assignment. Agents can file claims against policies, track claim status through the lifecycle, and manage adjuster assignments.
+
+- File a new claim against an existing policy
+- List and filter claims by client, status, or category
+- Track claim status (filed, under_review, approved, denied, closed)
+- Assign and manage adjusters on claims
+
+See: [Core API Reference](api/core-api.md)
+
+### 6. Notifications (`/api/notifications`)
 
 Manages client notifications for events like claim updates, policy renewals, payment reminders, and document requests. Supports filtering, pagination, and bulk read operations.
 
@@ -79,7 +90,7 @@ Manages client notifications for events like claim updates, policy renewals, pay
 
 See: [Core API Reference](api/core-api.md)
 
-### 6. Inbound Email (`/api/emails/inbox`)
+### 7. Inbound Email (`/api/emails/inbox`)
 
 Receives and manages incoming emails. Automatically matches emails to CRM client records based on sender address. Supports tagging for triage.
 

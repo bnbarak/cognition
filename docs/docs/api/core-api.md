@@ -7,7 +7,7 @@
 **Base URL:** `http://localhost:3000`
 **Source:** `javascript/src/routes/`
 
-The Core API handles authentication, client management, policy tracking, certificate of insurance generation, and client notifications for InsureCRM.
+The Core API handles authentication, client management, policy tracking, certificate of insurance generation, claims management, and client notifications for InsureCRM.
 
 ## Controllers
 
@@ -16,6 +16,7 @@ The Core API handles authentication, client management, policy tracking, certifi
 | Auth | `/api/auth` | Login, register, token refresh, password reset |
 | Clients | `/api/clients` | Client management, policy attachment, tag management, search/filter |
 | COI | `/api/coi` | Certificate of Insurance generation from policy data |
+| Claims | `/api/claims` | Claims filing, tracking, status management, adjuster assignment |
 | Notifications | `/api/notifications` | Client notification management, read tracking, bulk operations |
 
 **Auth required:** No (login, forgot-password) | Yes (all other endpoints)
