@@ -1,8 +1,8 @@
 # InsureCRM — Product Overview
 
-<!-- doc-freshness: { "commit": "dc34067", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 19 } -->
+<!-- doc-freshness: { "commit": "be06edb", "date": "2026-04-03", "updatedBy": "devin-ai-integration[bot]", "pr": 30 } -->
 
-!!! info "Last updated: 2026-04-02 | commit `dc34067` | by devin-ai-integration[bot] | PR #19"
+!!! info "Last updated: 2026-04-03 | commit `be06edb` | by devin-ai-integration[bot] | PR #30"
 
 ## What is InsureCRM?
 
@@ -80,7 +80,7 @@ Handles identity, client data, and policy management.
 
 | Controller | Endpoints | Concern |
 |-----------|-----------|---------|
-| Auth, Clients, COI | 16+ | Login, register, tokens, client CRUD, policy management, COI generation |
+| Auth, Clients, COI, Notifications | 22+ | Login, register, tokens, client CRUD, policy management, COI generation, notifications |
 
 See: [Core API Reference](api/core-api.md)
 
@@ -106,6 +106,7 @@ Agency
  └── Client
       ├── Contact Info (email, phone, address)
       ├── Policy[] (auto, home, life, health, commercial)
+      ├── Notification[] (claim_update, policy_renewal, payment_due, document_request, general)
       ├── Sent Emails[]
       └── Received Emails[]
 ```
