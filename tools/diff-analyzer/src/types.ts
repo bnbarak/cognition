@@ -2,6 +2,25 @@
 export interface DiffAnalysis {
   pr: PRSummary;
   files: FileChange[];
+  actionPlan?: ActionPlan;
+}
+
+/** Deterministic action plan derived from domain-map + diff analysis */
+export interface ActionPlan {
+  /** Which specs need regeneration based on changed files */
+  affectedSpecs: AffectedSpec[];
+  /** Files that don't map to any domain-map entry (noise already filtered) */
+  unmappedFiles: string[];
+  /** Whether any unmapped file looks like a new controller */
+  hasNewController: boolean;
+}
+
+/** A spec that needs regeneration */
+export interface AffectedSpec {
+  spec: string;
+  generator: string;
+  /** Source files in this spec that were changed in the diff */
+  changedSources: string[];
 }
 
 /** PR-level summary metrics */

@@ -33,51 +33,45 @@ You are a documentation agent. When a code PR is submitted, you analyze the chan
    cd javascript && npm install
    ```
 
-### Step 2: Run the Diff Analyzer CLI
+### Step 2: Run the Diff Analyzer CLI (with Action Plan)
 
-The CLI can generate the diff directly from a PR number or branch name — no need to create diff files manually.
+The CLI generates the diff AND a deterministic action plan when given `--domain-map`. This pre-computes which specs need regeneration and which files are unmapped. **You still decide how to group concerns and which update path (A/B/both) to use** based on the domain map.
 
 ```bash
 cd tools/diff-analyzer
-# From a PR number:
-npx ts-node src/cli.ts --pr <number> --repo /path/to/repo --pretty > /tmp/diff-analysis.json
+# From a PR number (recommended):
+npx ts-node src/cli.ts --pr <number> --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty > /tmp/diff-analysis.json
 # Or from a branch name:
-npx ts-node src/cli.ts --branch <branch-name> --repo /path/to/repo --pretty > /tmp/diff-analysis.json
+npx ts-node src/cli.ts --branch <branch-name> --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty > /tmp/diff-analysis.json
 ```
 
-This fetches the branch, computes the merge-base against `main`, generates the diff, and produces structured JSON with per-file classification, change metrics, and hunk ranges. See `.agents/skills/diff-analyzer/SKILL.md` for output shape and all options.
+The output JSON now includes an `actionPlan` field with:
+- `affectedSpecs` — which specs need regeneration (and which changed sources triggered it)
+- `unmappedFiles` — files that don't map to any domain-map entry (may need manual review)
+- `hasNewController` — whether any unmapped file looks like a new controller
 
-### Step 3: Read Domain Map
+See `.agents/skills/diff-analyzer/SKILL.md` for full output shape and all options.
 
-Read `docs/domain-map.yaml` from the repo. This is the source of truth for code → docs → specs mapping.
+### Step 3: Read Domain Map & Action Plan
 
-### Step 4: Filter Noise
+Read `docs/domain-map.yaml` from the repo — this is the source of truth for code → docs → specs mapping. Then read the `actionPlan` from the CLI output:
 
-Remove files from the analysis that NEVER affect documentation:
+1. **`actionPlan.affectedSpecs`** tells you exactly which specs need regeneration — skip specs not in this list.
+2. **`actionPlan.unmappedFiles`** lists non-noise files that don't map to any domain-map entry — review these for potential doc impact.
+3. **`actionPlan.hasNewController`** tells you if you need to create new doc pages and update `domain-map.yaml`.
 
-- Test files: paths containing `__tests__/`, `test/`, `.test.ts`, `.spec.java`
-- Lock files: `package-lock.json`, `*.lock`
-- CI/CD files: `.github/`, `.gitlab-ci.yml`
-- Build artifacts: `.gitignore`, editor configs, IDE files
-- The diff-analyzer itself: `tools/diff-analyzer/**`
+**Noise filtering is done for you** — test files, lock files, CI/CD files, and the diff-analyzer itself are already excluded. You still decide how to group concerns and which update path (A/B/both) to use based on the domain map.
 
-If zero meaningful files remain → **STOP**. Report "No documentation impact detected" and exit.
+### Step 4: Filter Noise & Group by Concern
 
-### Step 5: Group by Concern
+Use `actionPlan.unmappedFiles` to identify files that need manual review. Then group the remaining files into concern groups using `docs/domain-map.yaml`:
 
-For each remaining file, look it up in `docs/domain-map.yaml`:
+1. Cross-reference each file against `pages[].sources[].file` and `specs[].sources[].file`
+2. Group files by the `doc` page they map to
+3. If a file is NOT in the domain map and NOT in `unmappedFiles`, it was already filtered as noise
+4. If `actionPlan.hasNewController` is true, create a new group for the unmapped controller
 
-1. Find all `pages[].sources[].file` and `specs[].sources[].file` entries that match the file path
-2. Group files by the `doc` page they map to — files mapping to the same doc page belong to the same **concern-group**
-3. If a file maps to multiple doc pages, it appears in EACH group
-4. If a file is NOT in `docs/domain-map.yaml`:
-   - If it's a NEW route/controller file → create a new group named after the file (this is a new feature)
-   - If it's a type/model file → try to associate it with an existing group by directory proximity
-   - Otherwise → place in an "unmapped" group
-5. Also check `specs[].sources[]` — if a file maps to a spec, tag that spec on the concern-group
-
-**Bail-out rule:** If you identify more than 7 concern-groups → **STOP**. Report:
-> "This PR has [N] distinct documentation concerns. This is too complex for automated updates. Here's the breakdown: [list groups]. Please split the PR or review manually."
+**Bail-out rule:** If you identify more than 7 concern-groups → **STOP**. Report that the PR is too complex.
 
 ### Step 6: Update Docs for Each Concern-Group
 
@@ -124,11 +118,15 @@ If the concern-group involves route handlers, controllers, request/response type
    - If an endpoint was **removed** → remove its annotation block
    - If request/response shapes changed → update the annotation schemas
    - If behavior changed → update summary/description text in annotations
-3. **Regenerate OpenAPI specs** after updating annotations:
-   ```bash
-   ./scripts/generate-openapi-specs.sh
-   ```
-   This starts Express (port 3000) and Spring Boot (port 8080), fetches the live OpenAPI specs, saves them to `docs/docs/specs/`, and shuts down the servers.
+3. **Regenerate OpenAPI specs** — but ONLY if `actionPlan.affectedSpecs` includes specs for this group:
+   - Check the concern group's `specs` array — only regenerate those specs
+   - If no specs are listed for this group, skip regeneration entirely
+   - Run the generation script:
+     ```bash
+     ./scripts/generate-openapi-specs.sh
+     ```
+     This starts Express (port 3000) and Spring Boot (port 8080), fetches the live OpenAPI specs, saves them to `docs/docs/specs/`, and shuts down the servers.
+   - **Skip regeneration for specs NOT in `actionPlan.affectedSpecs`.** For example, if only Express files changed, do NOT regenerate the Spring Boot spec.
 4. The MkDocs OAD plugin will automatically render the updated specs on the API reference pages — **no manual editing of API doc pages needed**.
 
 #### Path B: Narrative Doc Changes (edit markdown directly)

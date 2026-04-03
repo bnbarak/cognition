@@ -1,0 +1,41 @@
+pages:
+  - doc: docs/docs/index.md
+    section: System at a Glance
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: Auth controller entry
+      - file: javascript/src/routes/clients.ts
+        concern: Clients controller entry
+
+  - doc: docs/docs/api/core-api.md
+    section: API Reference (OAD-rendered)
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: Auth endpoints
+      - file: javascript/src/routes/clients.ts
+        concern: Client endpoints
+      - file: javascript/src/types/client.ts
+        concern: Client types
+
+  - doc: docs/docs/api/email-api.md
+    section: API Reference (OAD-rendered)
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        concern: Send Email endpoints
+
+specs:
+  - spec: docs/docs/specs/express-openapi.json
+    generator: scripts/generate-openapi-specs.sh
+    sources:
+      - file: javascript/src/routes/auth.ts
+        concern: Auth endpoints
+      - file: javascript/src/routes/clients.ts
+        concern: Client endpoints
+      - file: javascript/src/types/client.ts
+        concern: Client types
+
+  - spec: docs/docs/specs/springboot-openapi.json
+    generator: scripts/generate-openapi-specs.sh
+    sources:
+      - file: java/src/main/java/com/insurecrm/email/controller/SendEmailController.java
+        concern: Send Email endpoints

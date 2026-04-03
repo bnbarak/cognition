@@ -57,6 +57,7 @@ git diff main...feature-branch | npx ts-node src/cli.ts - --pretty
 | `--branch <name>` | Generate diff from a branch name | — |
 | `--base <branch>` | Base branch to diff against | `main` |
 | `--repo <path>` | Path to the git repository | cwd |
+| `--domain-map <path>` | Path to `domain-map.yaml` — enables `actionPlan` in output | — |
 | `--pretty` | Pretty-print JSON output | off |
 
 ---
@@ -90,6 +91,20 @@ interface DiffAnalysis {
     }>;
     domainMatches: [];  // Always empty from CLI; agent enriches later
   }>;
+  actionPlan?: ActionPlan;  // Present when --domain-map is provided
+}
+
+interface ActionPlan {
+  /** Which specs need regeneration based on changed files */
+  affectedSpecs: Array<{
+    spec: string;        // e.g. "docs/docs/specs/express-openapi.json"
+    generator: string;   // e.g. "scripts/generate-openapi-specs.sh"
+    changedSources: string[];  // Source files that triggered this
+  }>;
+  /** Files that don't map to any domain-map entry (noise already filtered) */
+  unmappedFiles: string[];
+  /** Whether any unmapped file looks like a new controller */
+  hasNewController: boolean;
 }
 ```
 
@@ -116,12 +131,14 @@ interface DiffAnalysis {
 
 ## How the Agent Should Use This
 
-1. Run the CLI with `--pr` or `--branch` to get the structured JSON (no need to generate diff files manually)
-2. Read `docs/domain-map.yaml` from the repo
-3. Cross-reference each `file.path` against `docs/domain-map.yaml` sources
-4. Use `file.hunks` line ranges to check overlap with `docs/domain-map.yaml` line ranges
-5. Build the list of docs/specs that need updating
-6. The `pr` summary flags (`hasRouteChanges`, `hasSpecChanges`, etc.) help determine scope
+1. Run the CLI with `--pr` or `--branch` **and `--domain-map`** to get the structured JSON with a pre-computed action plan
+2. Read `actionPlan.affectedSpecs` — only regenerate these specs (skip the rest)
+3. Check `actionPlan.hasNewController` — if true, create new doc pages and update `domain-map.yaml`
+4. Review `actionPlan.unmappedFiles` — these may need manual doc impact assessment
+5. Read `docs/domain-map.yaml` and group concerns yourself based on the file-to-doc mappings
+6. The `pr` summary flags (`hasRouteChanges`, `hasSpecChanges`, etc.) provide quick scope overview
+
+**Without `--domain-map`:** The CLI outputs only the base `pr` + `files` JSON (no action plan). The agent must manually cross-reference the domain map.
 
 ---
 
