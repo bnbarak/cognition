@@ -5,6 +5,7 @@ import authRouter from "./routes/auth";
 import clientsRouter from "./routes/clients";
 import coiRouter from "./routes/coi";
 import claimsRouter from "./routes/claims";
+import notificationsRouter from "./routes/notifications";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
       { name: "Clients", description: "Client and policy management" },
       { name: "Certificates", description: "Certificate of Insurance (COI) generation and management" },
       { name: "Claims", description: "Insurance claims filing, tracking, and adjuster management" },
+      { name: "Notifications", description: "Client notification management and delivery tracking" },
     ],
   },
   apis: ["./src/routes/*.ts"],
@@ -42,6 +44,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/clients", clientsRouter);
 app.use("/api/coi", coiRouter);
 app.use("/api/claims", claimsRouter);
+app.use("/api/notifications", notificationsRouter);
 
 /** Health check */
 app.get("/health", (_req, res) => {
