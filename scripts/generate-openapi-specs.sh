@@ -74,14 +74,13 @@ echo ""
 echo "Fetching OpenAPI specs..."
 
 # Inject x-generated metadata (OpenAPI extension) and pretty-print
-GEN_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 GEN_NOTE="AUTO-GENERATED FILE — DO NOT EDIT. Re-generate with: ./scripts/generate-openapi-specs.sh"
 
 curl -sf "http://localhost:$EXPRESS_PORT/openapi.json" \
   | python3 -c "
 import json, sys
 spec = json.load(sys.stdin)
-new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'date': '$GEN_DATE', 'script': 'scripts/generate-openapi-specs.sh'}}
+new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'script': 'scripts/generate-openapi-specs.sh'}}
 new_spec.update(spec)
 json.dump(new_spec, sys.stdout, indent=4)
 " > "$SPECS_DIR/express-openapi.json"
@@ -91,7 +90,7 @@ curl -sf "http://localhost:$SPRINGBOOT_PORT/api-docs" \
   | python3 -c "
 import json, sys
 spec = json.load(sys.stdin)
-new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'date': '$GEN_DATE', 'script': 'scripts/generate-openapi-specs.sh'}}
+new_spec = {'x-generated': {'warning': '$GEN_NOTE', 'script': 'scripts/generate-openapi-specs.sh'}}
 new_spec.update(spec)
 json.dump(new_spec, sys.stdout, indent=4)
 " > "$SPECS_DIR/springboot-openapi.json"
