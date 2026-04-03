@@ -142,8 +142,11 @@ If the concern-group involves business logic descriptions, product context, auth
    - `docs/docs/authentication.md` — if auth behavior changed
    - Other narrative pages as needed
 3. If a new controller was added → create a new API page with OAD directive (see existing `api/core-api.md` as template), update `docs/mkdocs.yml` nav, update `docs/domain-map.yaml`
+4. **Update freshness stamps** on every doc page you touched (see Freshness Stamps section below)
 
 #### Both Paths
+
+**Update freshness stamps** on every doc page you modified (Path A API pages AND Path B narrative pages). See the Freshness Stamps section below for format and rules.
 
 After processing each group, record:
 - `concern`: name (e.g., "auth", "clients", "send-email")
@@ -216,6 +219,7 @@ Send a summary message to the user with:
 5. A PR exists with all changes (annotations + specs + docs), properly labeled by confidence
 6. A comment exists on the original PR linking to the doc-update PR
 7. Narrative pages (index.md, product.md, authentication.md) are consistent with API changes
+8. **Freshness stamps** are updated on every doc page that was modified
 
 ### API page format (OAD-based):
 
@@ -223,6 +227,10 @@ API reference pages use the neoteroi OAD plugin to auto-render from OpenAPI spec
 
 ```markdown
 # Controller Name
+
+<!-- doc-freshness: { "commit": "abc1234", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 19 } -->
+
+!!! info "Last updated: 2026-04-02 | commit `abc1234` | by devin-ai-integration[bot] | PR #19"
 
 **Base URL:** `http://localhost:PORT`
 **Source:** `path/to/source/`
@@ -243,6 +251,32 @@ Brief description of the controller's purpose.
 ```
 
 **Do NOT hand-write endpoint tables, request/response examples, or schema details.** The OAD plugin generates all of this from the spec. Your job is to keep the annotations accurate so the generated spec is correct.
+
+---
+
+### Freshness Stamps
+
+Every doc page has a **freshness stamp** — a machine-readable HTML comment and a visible MkDocs admonition that tracks when the page was last updated.
+
+**Format (two lines, always together):**
+
+```markdown
+<!-- doc-freshness: { "commit": "<short-sha>", "date": "<YYYY-MM-DD>", "updatedBy": "<author>", "pr": <number> } -->
+
+!!! info "Last updated: <YYYY-MM-DD> | commit `<short-sha>` | by <author> | PR #<number>"
+```
+
+**Placement:** Immediately after the `# Title` heading, before any content.
+
+**Rules:**
+1. **Update the stamp on every doc page you modify.** If you touched the file, update the stamp.
+2. **Use the PR number** of the docs PR you are creating (not the original code PR).
+3. **Use the short SHA** (first 7 chars) of your docs commit.
+4. **Date must be passed explicitly** as `YYYY-MM-DD` in UTC. Use `date -u +%Y-%m-%d` to get today's date.
+5. **updatedBy** is the agent or user who made the update (e.g. `devin-ai-integration[bot]`).
+6. **Do NOT update stamps on pages you didn't change.** Only modified pages get fresh stamps.
+7. If creating a **new doc page**, add the stamp immediately after the title heading.
+8. The HTML comment is for **machine parsing** (auditing freshness across all pages). The admonition is for **human readers**.
 
 ---
 

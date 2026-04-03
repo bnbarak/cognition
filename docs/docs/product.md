@@ -1,5 +1,9 @@
 # InsureCRM — Product Overview
 
+<!-- doc-freshness: { "commit": "dc34067", "date": "2026-04-02", "updatedBy": "devin-ai-integration[bot]", "pr": 19 } -->
+
+!!! info "Last updated: 2026-04-02 | commit `dc34067` | by devin-ai-integration[bot] | PR #19"
+
 ## What is InsureCRM?
 
 InsureCRM is a **Customer Relationship Management** platform built specifically for **insurance agencies**. It combines client management, policy tracking, and tracked communications into a single system so agents can manage their entire book of business without switching tools.
