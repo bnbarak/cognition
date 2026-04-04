@@ -185,15 +185,26 @@ After processing each group, record:
    ```bash
    git push origin docs/<pr-branch>
    ```
-5. Create the PR using the git_create_pr tool with the **structured PR description** below
-6. **Add the `agent-artifact` label** to the PR so it's identifiable as agent-generated output:
+5. **Write the PR description to a file BEFORE creating the PR.** Use the template below and fill in every section:
+   ```bash
+   cat > /tmp/pr-body.md << 'ENDBODY'
+   <your filled-in PR description using the template below>
+   ENDBODY
+   ```
+6. Create the PR using the git_create_pr tool (the tool will auto-generate a description — you will overwrite it in the next step)
+7. **IMMEDIATELY overwrite the auto-generated PR description** with your structured description:
+   ```bash
+   gh pr edit <pr-number> --body-file /tmp/pr-body.md --repo bnbarak/cognition
+   ```
+   ⚠️ **This step is critical.** The `git_create_pr` tool auto-generates a description that does NOT follow our template. You MUST run `gh pr edit --body-file` to replace it. Do NOT skip this step. Do NOT rely on `git_update_pr_description` — it also auto-generates content.
+8. **Add the `agent-artifact` label** to the PR so it's identifiable as agent-generated output:
    ```bash
    gh pr edit <pr-number> --add-label "agent-artifact" --repo bnbarak/cognition
    ```
 
 #### PR Description Template
 
-Every docs PR MUST use this structure. Fill in each section based on your actual changes:
+Every docs PR MUST use this exact structure. Write it to `/tmp/pr-body.md` before creating the PR, then apply it with `gh pr edit --body-file`:
 
 ```markdown
 ## Confidence
@@ -245,6 +256,7 @@ Narrative page updates (or "No conceptual doc changes"):
 - The Review Guide section is **required for MEDIUM and LOW** confidence, optional for HIGH.
 - Be specific — don't say "updated docs", say exactly which files and what changed.
 - List every endpoint that was added/changed in API References, not just a count.
+- You MUST write this to `/tmp/pr-body.md` and apply with `gh pr edit --body-file`. Do NOT rely on auto-generated descriptions.
 
 ### Step 8: Assess Confidence and Decide
 
@@ -258,7 +270,7 @@ Calculate overall confidence = **lowest confidence across all groups**.
 
 **Note:** The `agent-artifact` label (added in Step 7) is always applied regardless of confidence level. The confidence labels above are additive.
 
-**Note:** The PR description template (from Step 7) already includes the Review Guide section. For MEDIUM and LOW confidence, you MUST fill it in with specific reasons, files/lines to focus on, and any judgment calls. For HIGH confidence, you may omit the Review Guide section or keep it brief.
+**Note:** The PR description template (from Step 7) already includes the Review Guide section. For MEDIUM and LOW confidence, you MUST fill it in with specific reasons, files/lines to focus on, and any judgment calls. For HIGH confidence, you may omit the Review Guide section or keep it brief. Remember: the PR description is applied via `gh pr edit --body-file /tmp/pr-body.md` — make sure the confidence label matches what's in the description.
 
 ### Step 9: Report
 
