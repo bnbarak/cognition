@@ -10,7 +10,26 @@ A reactive agent that keeps API documentation in sync with code changes. When an
 
 ## Architecture
 
-![Architecture](docs/docs/assets/architecture.png)
+```mermaid
+flowchart LR
+    PR["Engineer merges\na code PR"] -->|"GitHub Action\ntriggers"| Agent["Devin Agent\nstarts a session"]
+    Agent -->|"Runs"| CLI["Diff Analyzer CLI\nanalyzes what changed"]
+    CLI -->|"Outputs"| Plan["Action Plan\nwhich docs are affected"]
+    Plan -->|"Informs"| Agent
+    Agent -->|"Updates"| Annotations["Source code\nannotations"]
+    Agent -->|"Edits"| Docs["Conceptual\ndocs"]
+    Annotations -->|"Regenerates"| Specs["OpenAPI\nspecs"]
+    Agent -->|"Creates"| DocsPR["Docs PR\nfor review"]
+
+    style PR fill:#e3f2fd
+    style Agent fill:#fff3e0
+    style CLI fill:#e8f5e9
+    style Plan fill:#f3e5f5
+    style Annotations fill:#fce4ec
+    style Docs fill:#fce4ec
+    style Specs fill:#fce4ec
+    style DocsPR fill:#e0f7fa
+```
 
 **The flow:**
 
