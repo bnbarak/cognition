@@ -43,6 +43,59 @@ The key design principle: **deterministic where possible, agentic where needed.*
 
 ---
 
+## Features
+
+### Deterministic Diff Analysis
+- Parses PR diffs into structured JSON with file classification and hunk extraction
+- Maps changed files to documentation concerns via [`domain-map.yaml`](docs/domain-map.yaml)
+- Outputs a deterministic action plan: which specs to regenerate, which docs are affected, which files are unmapped
+- Automatic noise filtering — skips tests, configs, lock files, CI/CD
+- Groups related changes by domain concern (e.g., "claims" = routes + types)
+- 100+ unit tests covering parsing, mapping, and edge cases
+
+### Reactive Trigger
+- GitHub Action triggers a Devin session automatically on PR merge
+- No manual intervention — agent runs the full pipeline end-to-end
+- Can also be invoked manually: `!doc-update PR#<number>`
+
+### Source Code Annotations
+- Writes/updates `@openapi` JSDoc blocks (Express/TypeScript)
+- Writes/updates `@Operation` / `@ApiResponse` annotations (Spring Boot/Java)
+- Follows grounded [skill files](.agents/skills/) with real examples for writing quality and structure
+
+### OpenAPI Spec Regeneration
+- Starts live servers, fetches actual OpenAPI specs, commits them
+- Only regenerates specs affected by the change — skips unchanged services
+- [OAD plugin](https://github.com/Neoteroi/mkdocs-plugins) auto-renders API reference pages from specs
+
+### Conceptual Doc Updates
+- Updates narrative markdown pages (product overview, authentication, guides)
+- Creates new doc pages when new controllers are detected
+- Updates `domain-map.yaml` when the codebase evolves
+
+### Confidence-Based PR Submission
+- **HIGH** → auto-submits with `auto-docs` label
+- **MEDIUM** → flags for review with `docs-review-requested` label + review guide (why, where to focus, judgment calls)
+- **LOW** → draft PR with `docs-needs-review` label + detailed review guide
+
+### Structured PR Descriptions
+- Every docs PR uses a 4-section template: Confidence, API References, Conceptual Docs, Docs
+- Review Guide for MEDIUM/LOW PRs — tells the reviewer exactly where to look
+- `agent-artifact` label on all agent-generated PRs
+- Structured commit messages with concern-group breakdown
+
+### Freshness Tracking
+- Every doc page stamped with commit SHA, date, author, and PR number
+- Machine-readable HTML comment + visible MkDocs admonition
+- Stale docs are immediately visible
+
+### Live Documentation Site
+- [MkDocs](https://crm-api-generator-iymkmkjb.devinapps.com) with shadcn theme
+- Auto-rendered API reference from OpenAPI specs (neoteroi OAD plugin)
+- Built-in search
+
+---
+
 ## Where to Look
 
 | What you're looking for | Where to find it |
