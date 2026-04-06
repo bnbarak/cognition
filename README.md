@@ -10,7 +10,7 @@ A reactive agent that keeps API documentation in sync with code changes. When an
 
 ## Architecture
 
-![Architecture](https://app.devin.ai/attachments/9995298f-2c0e-4073-a476-b7f7763cda8d/image.png)
+![Architecture](docs/docs/assets/architecture.png)
 
 **The flow:**
 
