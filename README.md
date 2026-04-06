@@ -63,16 +63,6 @@ The agent is triggered automatically when code changes land. It doesn't run on a
 
 A deterministic TypeScript CLI that parses PR diffs into structured JSON. This is the foundation that makes the agent reliable — instead of asking an LLM to "figure out what changed," we compute it.
 
-```bash
-cd tools/diff-analyzer && npm install
-
-# Analyze a PR by number
-npx ts-node src/cli.ts --pr 21 --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty
-
-# Analyze a branch
-npx ts-node src/cli.ts --branch feature-branch --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty
-```
-
 **What it outputs:**
 - `files[]` — each changed file with classification, hunks, and domain matches
 - `actionPlan.affectedSpecs` — which OpenAPI specs need regeneration
@@ -80,11 +70,7 @@ npx ts-node src/cli.ts --branch feature-branch --repo /path/to/repo --domain-map
 - `actionPlan.hasNewController` — whether a new controller was added
 - `pr` — summary stats (total files, additions, deletions)
 
-**Testing:** 100+ unit tests covering diff parsing, domain mapping, action plan generation, and edge cases.
-
-```bash
-cd tools/diff-analyzer && npm test
-```
+**Testing:** 100+ unit tests covering diff parsing, domain mapping, action plan generation, and edge cases. See [`tools/diff-analyzer/`](tools/diff-analyzer/) for usage and commands.
 
 ---
 
