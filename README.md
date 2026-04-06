@@ -6,6 +6,8 @@ Built for internal teams tired of outdated API docs.
 
 **Live docs:** [https://crm-api-generator-iymkmkjb.devinapps.com](https://crm-api-generator-iymkmkjb.devinapps.com)
 
+**Demo video:** [Watch on Loom](https://www.loom.com/share/ef3c64dbd53446329fb0e3365ad43afc)
+
 ---
 
 ## How to Install
