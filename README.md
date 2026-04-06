@@ -1,8 +1,6 @@
-# Doc-Update Agent — MVP
+# Doc-Update Agent
 
-An automated system that keeps API documentation in sync with code changes. When engineers modify endpoints, the agent detects the changes, updates annotations and docs, regenerates OpenAPI specs, and creates a PR — so docs never fall behind.
-
-Built for internal teams tired of outdated API docs.
+A reactive agent that keeps API documentation in sync with code changes. When an engineer merges a PR, a GitHub Action triggers a Devin session that analyzes the diff, updates annotations and docs, regenerates OpenAPI specs, and opens a docs PR — so documentation never falls behind.
 
 **Live docs:** [https://crm-api-generator-iymkmkjb.devinapps.com](https://crm-api-generator-iymkmkjb.devinapps.com)
 
@@ -10,95 +8,82 @@ Built for internal teams tired of outdated API docs.
 
 ---
 
-## How to Install
+## Architecture
 
-You don't. Devin works out of the box in your codebase — just like any other engineer. Point it at a repo, give it a PR, and it handles the rest. No plugins, no CI config, no infrastructure to maintain.
+![Architecture](docs/docs/assets/architecture.png)
 
----
+**The flow:**
 
-## How the Agent Works
+1. An engineer merges a code PR
+2. A GitHub Action triggers a Devin session
+3. The agent runs the **Diff Analyzer CLI** — a deterministic tool that parses the PR diff, maps changed files to documentation concerns via a domain map, and outputs a structured action plan (which specs to regenerate, which docs are affected, which files are unmapped)
+4. The agent uses the action plan to update source code annotations, edit conceptual docs, and regenerate OpenAPI specs
+5. The agent creates a docs PR with a confidence label (HIGH/MEDIUM/LOW) and a structured review guide
 
-```mermaid
-flowchart TD
-    A["PR merged / code changed"] --> B["1. Run diff-analyzer CLI (--pr N)<br/>Parse PR diff into structured JSON"]
-    B --> C["2. Read domain map (domain-map.yaml)<br/>Match changed files to doc concerns"]
-    C --> D["3. Filter noise<br/>Skip tests, configs, utils"]
-    D --> E["4. Group by concern<br/>Cluster related changes (e.g. claims = routes + types)"]
-    E --> F{"5. For each concern group"}
-    F -->|"API changes"| G["Path A: Update @openapi annotations<br/>→ Regenerate OpenAPI specs<br/>→ OAD plugin renders API pages"]
-    F -->|"Narrative changes"| H["Path B: Edit markdown docs<br/>(index.md, product.md, auth, etc.)"]
-    G --> I["6. Assess confidence per concern"]
-    H --> I
-    I -->|HIGH| J["Auto-submit"]
-    I -->|MEDIUM| K["Flag for review"]
-    I -->|LOW| L["Draft PR — human review required"]
-    J --> M["7. Create docs PR<br/>with freshness stamps (commit, date, author)"]
-    K --> M
-    L --> M
-```
+The key design principle: **deterministic where possible, agentic where needed.** The CLI handles diff parsing and concern mapping with tested, reproducible logic. The agent handles the creative work — writing annotations, editing prose, and making judgment calls.
 
 ---
 
-## Who Runs What
+## Where to Look
 
-```mermaid
-flowchart LR
-    A["PR merged"] --> B["GitHub Actions trigger"]
-    B --> C["Devin session starts"]
-    C --> D["!doc-update playbook"]
-    D --> E["diff-analyzer CLI\n(deterministic)"]
-    E --> F["Agent reads action plan\n+ domain map"]
-    F --> G["Agent writes annotations\n+ updates docs"]
-    G --> H["generate-openapi-specs.sh\n(deterministic)"]
-    H --> I["Agent creates docs PR\nwith confidence label"]
-```
-
-| Step | Who | What |
-|------|-----|------|
-| 1. Trigger | **GitHub Actions** | Detects PR merge, starts a Devin session with `!doc-update PR#N` |
-| 2. Diff analysis | **diff-analyzer CLI** | Parses the PR diff, computes action plan (which specs to regen, unmapped files) |
-| 3. Concern grouping | **Devin agent** | Groups changes by domain concern using `domain-map.yaml` |
-| 4. Annotation writing | **Devin agent** | Writes/updates `@openapi` JSDoc or `@Operation` annotations following skill files |
-| 5. Spec regeneration | **generate-openapi-specs.sh** | Starts servers, fetches live OpenAPI specs, saves to `docs/docs/specs/` |
-| 6. Doc updates | **Devin agent** | Updates narrative markdown pages (index, product, auth) |
-| 7. PR creation | **Devin agent** | Creates docs PR with confidence label + review guide (if MEDIUM/LOW) |
+| What you're looking for | Where to find it |
+|---|---|
+| **Agent orchestration prompt** | [`.agents/playbooks/doc-update.md`](.agents/playbooks/doc-update.md) — the full playbook that drives the agent end-to-end |
+| **Diff Analyzer CLI** | [`tools/diff-analyzer/`](tools/diff-analyzer/) — TypeScript CLI with 100+ unit tests |
+| **Domain mapping** | [`docs/domain-map.yaml`](docs/domain-map.yaml) — maps source files to doc pages and OpenAPI specs |
+| **Skills (annotation patterns)** | [`.agents/skills/`](.agents/skills/) — grounded writing examples for Express, Java, annotation quality |
+| **OpenAPI spec generation** | [`scripts/generate-openapi-specs.sh`](scripts/generate-openapi-specs.sh) — starts servers, fetches live specs |
+| **GitHub Actions trigger** | [`.github/workflows/doc-update.yml`](.github/workflows/doc-update.yml) — kicks off the agent on PR merge |
+| **MkDocs site config** | [`docs/mkdocs.yml`](docs/mkdocs.yml) — documentation site with shadcn theme + OAD plugin |
+| **Mock services** | [`javascript/`](javascript/) (Express) and [`java/`](java/) (Spring Boot) — the CRM API codebase |
 
 ---
 
-## CLIs
+## The Reactive Agent
 
-### diff-analyzer
+The agent is triggered automatically when code changes land. It doesn't run on a schedule — it reacts to PR merges.
 
-Parses a PR diff into structured JSON with a deterministic action plan.
+**What it does per run:**
+- Parses the PR diff to understand what changed (deterministic, via CLI)
+- Groups changes by domain concern (e.g., "claims" = routes + types + tests)
+- Writes or updates `@openapi` JSDoc / `@Operation` annotations in source code
+- Regenerates OpenAPI specs from live servers
+- Updates conceptual docs (product overview, auth, guides)
+- Stamps each doc page with freshness metadata (commit, date, author)
+- Creates a docs PR with a structured description and confidence assessment
+
+**Confidence-based output:**
+- **HIGH** — auto-submits (routine annotation additions)
+- **MEDIUM** — flags for review with a review guide explaining what to check
+- **LOW** — opens as draft PR, requires human review
+
+---
+
+## Diff Analyzer CLI
+
+A deterministic TypeScript CLI that parses PR diffs into structured JSON. This is the foundation that makes the agent reliable — instead of asking an LLM to "figure out what changed," we compute it.
 
 ```bash
 cd tools/diff-analyzer && npm install
 
-# Analyze a PR by number:
+# Analyze a PR by number
 npx ts-node src/cli.ts --pr 21 --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty
 
-# Analyze a branch:
+# Analyze a branch
 npx ts-node src/cli.ts --branch feature-branch --repo /path/to/repo --domain-map /path/to/repo/docs/domain-map.yaml --pretty
-
-# Analyze a raw diff file:
-npx ts-node src/cli.ts diff-file.txt --domain-map /path/to/repo/docs/domain-map.yaml --pretty
 ```
 
-**Output includes:**
+**What it outputs:**
 - `files[]` — each changed file with classification, hunks, and domain matches
-- `pr` — summary stats (total files, additions, deletions, flags)
-- `actionPlan.affectedSpecs` — which specs need regeneration
-- `actionPlan.unmappedFiles` — files not in the domain map
+- `actionPlan.affectedSpecs` — which OpenAPI specs need regeneration
+- `actionPlan.unmappedFiles` — files not yet in the domain map
 - `actionPlan.hasNewController` — whether a new controller was added
+- `pr` — summary stats (total files, additions, deletions)
 
-### generate-openapi-specs.sh
-
-Starts both servers, fetches their live OpenAPI specs, and saves them.
+**Testing:** 100+ unit tests covering diff parsing, domain mapping, action plan generation, and edge cases.
 
 ```bash
-./scripts/generate-openapi-specs.sh
-# Output: docs/docs/specs/express-openapi.json
-#         docs/docs/specs/springboot-openapi.json
+cd tools/diff-analyzer && npm test
 ```
 
 ---
@@ -111,20 +96,7 @@ Start a Devin session and type:
 !doc-update PR#<number>
 ```
 
-Or let GitHub Actions trigger it automatically on PR merge.
-
----
-
-## What's in the Box
-
-| Component | Purpose |
-|-----------|---------|
-| **diff-analyzer CLI** | Parses PR diffs → structured JSON + deterministic action plan |
-| **generate-openapi-specs.sh** | Regenerates OpenAPI specs from live servers |
-| **Domain Map** (`domain-map.yaml`) | Maps source files → doc pages → OpenAPI specs |
-| **Skills** | Grounded annotation patterns (Express JSDoc, Spring Boot, language quality) |
-| **Playbook** (`!doc-update`) | Orchestration prompt — the agent's full procedure |
-| **GitHub Actions trigger** | Auto-runs the agent on PR merge |
+Or let the GitHub Action trigger it automatically on PR merge.
 
 ---
 

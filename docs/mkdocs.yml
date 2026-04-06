@@ -1,6 +1,6 @@
 site_name: InsureCRM Documentation
 site_description: Documentation for InsureCRM — a CRM platform for insurance agencies
-site_url: ""
+site_url: https://crm-api-generator-iymkmkjb.devinapps.com
 
 theme:
   name: shadcn
