@@ -1,6 +1,7 @@
 # Node
 javascript/node_modules/
 javascript/dist/
+javascript/coverage/
 
 # Java
 java/target/

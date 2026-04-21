@@ -7,6 +7,11 @@ import type {
   CoverageLine,
   CoverageLimits,
 } from "../types/coi";
+import {
+  validateCoverageLimits,
+  validateWaiverReferences,
+  buildDescriptionOfOperations,
+} from "../lib/coverage-validation";
 
 const router = Router();
 
@@ -22,90 +27,12 @@ const PRODUCER = {
 };
 
 /**
- * Validates that coverage limits meet minimum requirements per coverage type.
- * Returns an error message if invalid, or null if valid.
- */
-function validateCoverageLimits(line: CoverageLine): string | null {
-  const { limits } = line;
-
-  switch (line.type) {
-    case "general_liability":
-      if (!limits.eachOccurrence || limits.eachOccurrence < 100000) {
-        return `General liability each-occurrence limit must be at least $100,000 (got ${limits.eachOccurrence})`;
-      }
-      if (!limits.generalAggregate || limits.generalAggregate < limits.eachOccurrence) {
-        return `General liability aggregate must be >= each-occurrence limit`;
-      }
-      break;
-
-    case "auto_liability":
-      if (!limits.combinedSingleLimit || limits.combinedSingleLimit < 50000) {
-        return `Auto liability combined single limit must be at least $50,000`;
-      }
-      break;
-
-    case "workers_comp":
-      if (!limits.perAccident || limits.perAccident < 100000) {
-        return `Workers comp per-accident limit must be at least $100,000`;
-      }
-      break;
-
-    case "umbrella":
-      if (!limits.eachOccurrence || limits.eachOccurrence < 1000000) {
-        return `Umbrella each-occurrence limit must be at least $1,000,000`;
-      }
-      break;
-
-    case "professional_liability":
-      if (!limits.eachOccurrence || limits.eachOccurrence < 250000) {
-        return `Professional liability each-occurrence limit must be at least $250,000`;
-      }
-      break;
-  }
-
-  return null;
-}
-
-/**
  * Generates a unique certificate number in the format COI-YYYY-XXXXXXXX
  */
 function generateCertificateNumber(): string {
   const year = new Date().getFullYear();
   const random = Math.random().toString(36).substring(2, 10).toUpperCase();
   return `COI-${year}-${random}`;
-}
-
-/**
- * Builds the description of operations string, combining user-provided
- * description with auto-generated coverage summary.
- */
-function buildDescriptionOfOperations(
-  request: GenerateCOIRequest,
-  coverageLines: CoverageLine[]
-): string {
-  const parts: string[] = [];
-
-  if (request.descriptionOfOperations) {
-    parts.push(request.descriptionOfOperations);
-  }
-
-  // Auto-generate coverage summary
-  const coverageTypes = coverageLines.map((l) => l.type.replace(/_/g, " ")).join(", ");
-  parts.push(`Coverage types: ${coverageTypes}.`);
-
-  if (request.additionalInsureds && request.additionalInsureds.length > 0) {
-    const names = request.additionalInsureds.map((ai) => ai.name).join(", ");
-    parts.push(`Additional insured: ${names}.`);
-  }
-
-  if (request.waiverOfSubrogation) {
-    const waiverTypes = request.waiverOfSubrogation.appliesTo
-      .map((t) => t.replace(/_/g, " "))
-      .join(", ");
-    parts.push(`Waiver of subrogation applies to: ${waiverTypes}.`);
-  }
-
-  return parts.join(" ");
 }
 
 /**
@@ -200,18 +127,13 @@ router.post("/generate", (req: Request<{}, COIResponse, GenerateCOIRequest>, res
     }
   }
 
-  // Validate waiver of subrogation references valid coverage types
-  if (request.waiverOfSubrogation) {
-    const coveredTypes = new Set(request.coverageLines.map((l) => l.type));
-    for (const waiverType of request.waiverOfSubrogation.appliesTo) {
-      if (!coveredTypes.has(waiverType)) {
-        res.status(400).json({
-          success: false,
-          message: `Waiver of subrogation references coverage type '${waiverType}' which is not included in the certificate`,
-        });
-        return;
-      }
-    }
+  const waiverError = validateWaiverReferences(request);
+  if (waiverError) {
+    res.status(400).json({
+      success: false,
+      message: waiverError,
+    });
+    return;
   }
 
   // Build the certificate
