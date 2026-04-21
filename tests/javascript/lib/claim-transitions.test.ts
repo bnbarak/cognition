@@ -1,10 +1,10 @@
 import { describe, test, expect } from "vitest";
-import type { Claim, ClaimStatus } from "../types/claim";
+import type { Claim, ClaimStatus } from "../../../javascript/src/types/claim";
 import {
   advanceClaim,
   canTransitionClaim,
   VALID_TRANSITIONS,
-} from "./claim-transitions";
+} from "../../../javascript/src/lib/claim-transitions";
 
 /**
  * ====================================================================

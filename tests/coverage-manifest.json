@@ -1,0 +1,42 @@
+{
+  "$schema": "./coverage-manifest.schema.json",
+  "description": "Per-file record of when each production file was last covered by tests, which commit it was tested against, and the PR that produced it. Updated by the post-merge GitHub Action (.github/workflows/update-coverage-manifest.yml). Read by the !test-coverage playbook (Step 3) to avoid re-testing already-covered files and to flag files whose source has drifted since last tested.",
+  "files": [
+    {
+      "file": "javascript/src/lib/coverage-validation.ts",
+      "test_file": "tests/javascript/lib/coverage-validation.test.ts",
+      "tier": "easy",
+      "last_tested_commit": "cc7b63620f96041d9e822eb3308bd4f2e5bcb3a4",
+      "last_tested_date": "2026-04-21T19:30:39Z",
+      "coverage_after": 100.0,
+      "pr": "https://github.com/bnbarak/cognition/pull/36"
+    },
+    {
+      "file": "javascript/src/lib/claim-transitions.ts",
+      "test_file": "tests/javascript/lib/claim-transitions.test.ts",
+      "tier": "hard1",
+      "last_tested_commit": "cc7b63620f96041d9e822eb3308bd4f2e5bcb3a4",
+      "last_tested_date": "2026-04-21T19:30:39Z",
+      "coverage_after": 91.66,
+      "pr": "https://github.com/bnbarak/cognition/pull/36"
+    },
+    {
+      "file": "javascript/src/lib/oidc-identity-provider.ts",
+      "test_file": "tests/javascript/lib/oidc-identity-provider.test.ts",
+      "tier": "hard2",
+      "last_tested_commit": "cc7b63620f96041d9e822eb3308bd4f2e5bcb3a4",
+      "last_tested_date": "2026-04-21T19:30:39Z",
+      "coverage_after": 81.57,
+      "pr": "https://github.com/bnbarak/cognition/pull/36"
+    },
+    {
+      "file": "javascript/src/routes/auth.ts",
+      "test_file": "tests/javascript/routes/auth.test.ts",
+      "tier": "hard2",
+      "last_tested_commit": "cc7b63620f96041d9e822eb3308bd4f2e5bcb3a4",
+      "last_tested_date": "2026-04-21T19:30:39Z",
+      "coverage_after": 85.96,
+      "pr": "https://github.com/bnbarak/cognition/pull/36"
+    }
+  ]
+}

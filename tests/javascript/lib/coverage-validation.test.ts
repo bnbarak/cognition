@@ -1,10 +1,10 @@
 import { describe, test, expect } from "vitest";
-import type { CoverageLine, GenerateCOIRequest } from "../types/coi";
+import type { CoverageLine, GenerateCOIRequest } from "../../../javascript/src/types/coi";
 import {
   validateCoverageLimits,
   validateWaiverReferences,
   buildDescriptionOfOperations,
-} from "./coverage-validation";
+} from "../../../javascript/src/lib/coverage-validation";
 
 /**
  * ====================================================================

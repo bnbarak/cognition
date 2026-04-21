@@ -27,11 +27,12 @@ codebase.
 ```mermaid
 flowchart TD
     A[Step 1: Read<br/>testing-philosophy.md<br/>+ AGENTS.md / OWNERS] --> B[Step 2: npm install<br/>+ baseline coverage]
-    B --> S[Step 3: Decide scope<br/>consult 3 sources of truth:<br/>coverage report · open PRs · runs log<br/>group by domain · cap at S-M]
+    B --> S[Step 3: Decide scope<br/>consult 3 sources of truth:<br/>coverage manifest · open PRs · coverage report<br/>group by domain · cap at S-M]
     S --> SA[Announce scope<br/>chosen + deferred + why<br/>via message_user]
-    SA --> C{Step 4: Classify each target<br/>in scope}
+    SA --> LEASE[Open draft PR as lease<br/>label: Test Coverage Claim<br/>body: scope file list]
+    LEASE --> C{Step 4: Classify each target<br/>in scope}
 
-    C -->|Pure function| E[Step 5a · EASY<br/>Export + write AAA tests]
+    C -->|Pure function| E[Step 5a · EASY<br/>Create tests/ mirror file<br/>→ write AAA tests]
     C -->|Logic tangled with I/O| H1[Step 5b · HARD 1<br/>Find seam → extract pure core<br/>→ handler orchestrates<br/>→ test the core]
     C -->|Calls 3rd-party service| H2[Step 5c · HARD 2<br/>Vendor testkit first<br/>→ define interface<br/>→ inject → spin up testkit<br/>in beforeAll → test]
 
@@ -41,19 +42,20 @@ flowchart TD
 
     R --> M{Step 7: Merge rule<br/>Diff is test-only AND<br/>no infra change?}
 
-    M -->|Yes| AM[Auto-merge lane<br/>Labels: Test Coverage<br/>+ Test Coverage Auto Merge]
+    M -->|Yes| AM[Auto-merge lane<br/>Labels: Test Coverage<br/>+ Test Coverage Auto Merge<br/>drop Test Coverage Claim]
     M -->|No| RR{OWNERS / CODEOWNERS<br/>on the path?}
 
-    RR -->|Yes| RR1[Review-required · OWNERS<br/>Label: Test Coverage]
-    RR -->|No| RR2[Review-required · last non-bot author<br/>Label: Test Coverage]
+    RR -->|Yes| RR1[Review-required · OWNERS<br/>Label: Test Coverage<br/>drop Test Coverage Claim]
+    RR -->|No| RR2[Review-required · last non-bot author<br/>Label: Test Coverage<br/>drop Test Coverage Claim]
 
-    AM --> PR[Step 8-9: open PR<br/>minimalist title/body<br/>wait for CI<br/>auto-merge]
-    RR1 --> PRR[Step 8-9: open PR<br/>minimalist title/body<br/>request review<br/>stop]
+    AM --> PR[Step 8-9: convert draft → ready<br/>wait for CI<br/>auto-merge]
+    RR1 --> PRR[Step 8-9: convert draft → ready<br/>request review<br/>stop]
     RR2 --> PRR
 
-    PR --> Log[Append row to<br/>'Test Coverage Runs Log'<br/>Knowledge Note]
-    PRR --> Log
-    Log --> Next{More untested files<br/>in another domain?}
+    PR --> Log[Post-merge GitHub Action<br/>updates tests/coverage-manifest.json]
+    PRR --> LogM[On merge: Action<br/>updates manifest]
+    Log --> Next{More deferred files<br/>in the original scope?}
+    LogM --> Next
     Next -->|Yes| S
     Next -->|No| Done([Done — report PR links])
 ```
@@ -114,35 +116,44 @@ stays S-M**. Everything outside that subset is a follow-up PR.
 **Three sources of truth (consult all, in order).** These prevent double
 work across sessions.
 
-1. **Coverage report** (objective, always current).
-   `cd javascript && npm run coverage` — drop any file already at or
-   above the target coverage. This catches anything that already
-   shipped.
-2. **Open PRs already in flight** (GitHub, filtered by the
-   `Test Coverage` label).
+1. **`tests/coverage-manifest.json`** — the in-repo, canonical record.
+   One entry per production file with `last_tested_commit`,
+   `last_tested_date`, `coverage_after`, `tier`, and the PR that
+   produced it.
+   ```bash
+   cat tests/coverage-manifest.json | jq '.files[] | select(.file == "<candidate>")'
    ```
-   git view_pr + label filter  → for each candidate file, check
-   whether an open PR already touches it. If so, skip; record the
-   PR link in the Deferred section.
+   Skip a candidate iff
+   `coverage_after ≥ target` **and**
+   `last_tested_commit == $(git log -n1 --pretty=%H -- <candidate>)`.
+   If the file is in the manifest but its *source* has drifted since
+   `last_tested_commit`, treat it as **stale** — it needs re-testing.
+   Flag stale files in the scope announcement.
+2. **Open PRs already in flight**. Check for both labels:
+   - `Test Coverage Claim` — another agent is currently drafting a
+     PR for these files. Treat these files as **locked**; skip them
+     and note the PR link in Deferred.
+   - `Test Coverage` — a non-draft PR is waiting for review/merge.
+     Skip and note the PR link.
    ```
-   Use `git(action="view_pr")` / the GitHub API via the git tool to
-   list open PRs with label `Test Coverage`.
-3. **"Test Coverage Runs Log" Knowledge Note** (historical, repo-pinned).
-   Read it first: `devin_knowledge_manage(action="list", search="Test
-   Coverage Runs Log", pinned_repo="<owner>/<repo>")`. The note is
-   append-only and contains one row per past run with columns
-   `date | path | scope | PR | status`. Skip any file that appears in a
-   *merged* row with coverage ≥ target, or a *currently-open* row
-   (which Source-of-Truth 2 should also have caught). If two sources
-   disagree, source 1 (coverage report) wins.
+   git(action="view_pr", ...)  # filter by state=open, labels
+   ```
+3. **Coverage report** (tie-breaker / sanity check).
+   `cd javascript && npm run coverage` — if the live coverage is
+   already above target for a file not in the manifest (e.g. a
+   pre-playbook test file exists), skip and record it in the manifest
+   via the next PR.
 
-If the note doesn't exist yet, create it on this run (see Step 9).
+**If two sources disagree, source 1 (the manifest) wins.** The manifest
+is the append-only record; the coverage report is just the current
+measurement.
 
 **Inputs**
 - The user-supplied path (file or directory).
-- The current test coverage of files under it — skip files already above
-  the target coverage (≥ 85% stmts by default).
-- The three sources of truth above.
+- `tests/coverage-manifest.json` contents.
+- Open PRs with `Test Coverage` or `Test Coverage Claim` labels.
+- The current coverage report.
+- Default target: ≥ 85% stmts on the touched files.
 
 **Domain signals (strongest first)**
 1. **`OWNERS` / `CODEOWNERS`** entry that matches the file. Files sharing
@@ -174,15 +185,18 @@ and note the rest in the PR description as a follow-up.
 
 **Algorithm**
 1. Expand the user-supplied path into the list of candidate files.
-2. Drop files that already meet the coverage target (source 1).
-3. Drop files already covered by an open `Test Coverage` PR (source 2).
-4. Drop files present in a merged row of the runs log (source 3).
-5. Sort what remains by: untouched by tests first, then alphabetical.
+2. Drop files that meet `coverage_after ≥ target` **and**
+   `last_tested_commit == current HEAD commit for that file` (source 1).
+3. Drop files referenced by an open `Test Coverage` / `Test Coverage
+   Claim` PR (source 2).
+4. Drop files whose live coverage is already ≥ target (source 3).
+5. Sort what remains by: stale first (re-test priority), then untested,
+   then alphabetical.
 6. Start with the first candidate. For each subsequent candidate,
    include it iff (a) it shares the dominant domain of the scope so far
    AND (b) adding it keeps the scope within the M budget.
 7. Stop as soon as either condition fails. That's *this* PR's scope.
-   The remaining files are logged for the next run.
+   The remaining files are deferred to the next run.
 8. If the resulting scope is empty (everything already covered or
    in-flight), exit cleanly and report "no scope to take — all files
    are already at target coverage or covered by open PRs."
@@ -216,6 +230,23 @@ Consulted: coverage report ✓ · open PRs: 1 match · runs log: 3 rows
 State the same scope + deferred list at the top of the PR body (Step 8).
 The reviewer should see exactly what the user saw in chat.
 
+**Immediately after announcing scope, open a draft PR as a lease.**
+This is how parallel `!test-coverage` agents see that these files are
+claimed and don't pick them up.
+
+1. Create a branch (`devin/$(date +%s)-test-coverage-<area>`) with an
+   empty `chore: claim test coverage for <area>` commit.
+2. Open a **draft PR** against `main` with
+   `git_pr(action="create", draft=true)`.
+3. Add label `Test Coverage Claim` (only; do not add `Test Coverage`
+   yet).
+4. Body = the scope announcement from above (verbatim, so it's
+   copy-paste-able as the final PR body).
+
+The label is dropped and swapped for `Test Coverage` (+ optionally
+`Test Coverage Auto Merge`) when the PR is converted from draft to
+ready-for-review in Step 9.
+
 ### Step 4 — Classify each in-scope target (easy / hard1 / hard2)
 
 For each file (or each exported symbol, for a route/handler file) in the
@@ -240,13 +271,17 @@ long as the size budget holds.
 
 Plan:
 - If the pure function is not exported, export it (smallest possible diff).
-- Create a sibling test file: `foo.ts` → `foo.test.ts`.
+- Create a test file in `tests/<lang>/<mirror>/<name>.test.ts` —
+  mirroring the source path. Example:
+  `javascript/src/lib/coverage-validation.ts` →
+  `tests/javascript/lib/coverage-validation.test.ts`.
+  **Do not** put the test file next to the source.
 - Enumerate the branches of the function. One `describe` block per
   behaviour family, one `test` per case.
 - Follow the testing philosophy doc. **No comments, AAA layout, strict
   naming.**
 
-Reference implementation: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/coverage-validation.test.ts" />
+Reference implementation: <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/coverage-validation.test.ts" />
 
 ### Step 5b — Hard 1: refactor, then test
 
@@ -268,7 +303,7 @@ Plan:
 
 Reference implementation:
 - Before/after: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/claim-transitions.ts" /> + <ref_file file="/home/ubuntu/repos/cognition/javascript/src/routes/claims.ts" />
-- Tests: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/claim-transitions.test.ts" />
+- Tests: <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/claim-transitions.test.ts" />
 
 ### Step 5c — Hard 2: introduce a real fake third-party, then test
 
@@ -295,8 +330,8 @@ Reference implementation:
 - Interface: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/identity-provider.ts" />
 - Real impl: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/oidc-identity-provider.ts" />
 - Handler wiring: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/routes/auth.ts" />
-- Tests (real OIDC server): <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/oidc-identity-provider.test.ts" />
-- Tests (integration through Express): <ref_file file="/home/ubuntu/repos/cognition/javascript/src/routes/auth.test.ts" />
+- Tests (real OIDC server): <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/oidc-identity-provider.test.ts" />
+- Tests (integration through Express): <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/routes/auth.test.ts" />
 
 ### Step 6 — Run everything
 
@@ -345,16 +380,17 @@ the team knows which lane you're in.
 
 ### Step 8 — PR hygiene
 
-Keep it minimalist. Reviewers read the diff, not the prose.
+Keep it minimalist. Reviewers read the diff, not the prose. **Workflow
+state lives in labels, not the title** — never rename a PR mid-flow; flip
+the label instead.
 
-**Title:**
-```
-test(<area>): <short, imperative, lowercase>
-```
+**Title:** short, imperative, lowercase. Mention the area if it's not
+obvious from the diff. Do not encode state (`[wip]`, `[ready]`) in the
+title.
 Examples:
-- `test(coi): cover validateCoverageLimits minimums`
-- `test(claims): cover advanceClaim state machine`
-- `test(auth): cover /login against mock OIDC issuer`
+- `cover validateCoverageLimits minimums`
+- `cover advanceClaim state machine`
+- `cover /login against mock OIDC issuer`
 
 **Body template:**
 ```markdown
@@ -377,64 +413,65 @@ Examples:
 - [ ] Review-required → @<reviewer-handle> (last author / OWNERS)
 ```
 
-**Labels (always apply both where applicable):**
-- `Test Coverage` — on every PR produced by this playbook.
+**Labels (state machine; labels drive automation, not title):**
+- `Test Coverage Claim` — on the draft PR opened in Step 3 as a lease.
+  Removed in Step 9 when the PR goes ready-for-review.
+- `Test Coverage` — on every ready-for-review PR from this playbook.
+  Triggers the post-merge manifest-update GitHub Action.
 - `Test Coverage Auto Merge` — additionally, *only* when the merge rule
-  above authorises auto-merge.
+  in Step 7 authorises auto-merge.
+
+There is **no** `Test Coverage Merged` label. GitHub's own merged-state
+is the source of truth.
 
 **What not to do:**
 - Do not write a "what I did" narrative. The commits and the diff say that.
 - Do not attach screenshots for a test PR.
 - Do not explain the testing philosophy in the PR body — link the doc if
   needed.
+- Do not rename the PR title between draft and ready.
 
-### Step 9 — Submit, log the run, then decide whether to continue
+### Step 9 — Convert draft → ready, then decide whether to continue
 
-- **Auto-merge lane**: open the PR with both labels, wait for CI green,
-  auto-merge.
-- **Review-required lane**: open the PR with `Test Coverage` label only,
-  request review from the computed reviewer. Do not merge.
+The draft PR opened in Step 3 is still around with label
+`Test Coverage Claim`. Finalise it now:
 
-**Append a row to the "Test Coverage Runs Log" Knowledge Note**
-(repo-pinned). This is how future runs know what was already covered.
-Use `devin_knowledge_manage`:
+1. `git_pr(action="update", ...)` — update the body with the final
+   coverage delta, the merge-lane checkbox, and (if review-required)
+   the reviewer handle.
+2. Mark the PR ready-for-review (un-draft it). If `gh` is available:
+   `gh pr ready <number>`. Otherwise use the GitHub API.
+3. **Swap labels:** remove `Test Coverage Claim`, add `Test Coverage`.
+   Additionally add `Test Coverage Auto Merge` if Step 7 authorised it.
+4. **Auto-merge lane**: wait for CI green, then auto-merge.
+5. **Review-required lane**: request review from the computed reviewer.
+   Do not merge.
 
-```
-action=update, note_id=<id from the list call in Step 3>,
-body=<existing body + one new row>
-```
+**Do not touch `tests/coverage-manifest.json` yourself.** The
+`.github/workflows/update-coverage-manifest.yml` GitHub Action runs on
+PR merge (when the `Test Coverage` label is present), re-runs coverage
+on `main`, and commits the new/updated entries to the manifest. This
+guarantees:
 
-If the note didn't exist when Step 3 ran, create it now:
+- Parallel PRs never merge-conflict on the manifest.
+- The manifest reflects *merged* coverage, not in-flight measurements.
+- A human never has to remember to update it.
 
-```
-action=create, pinned_repo="<owner>/<repo>",
-name="Test Coverage Runs Log",
-trigger="When starting a !test-coverage run",
-body=<the new row as a markdown table>
-```
-
-Row schema (one row per PR):
-
-| column    | meaning                                                |
-| --------- | ------------------------------------------------------ |
-| `date`    | ISO-8601, UTC                                          |
-| `path`    | user-supplied path that triggered the run              |
-| `scope`   | comma-separated list of files included in this PR      |
-| `tier`    | easy / hard1 / hard2 / mixed                           |
-| `size`    | S or M                                                 |
-| `PR`      | PR URL                                                 |
-| `status`  | `open` (update to `merged` / `closed` on next run)     |
+If the CI action fails (e.g. coverage summary missing, merge conflict),
+you'll see the failed check on `main`. Open a tiny follow-up PR with
+the manifest fix — still labelled `Test Coverage`.
 
 **After submit**, check whether the *Deferred* list from Step 3 is
 non-empty:
 
 - If yes → loop back to Step 3 with the deferred files as the new input
-  path(s). Each loop produces another S-M PR and another row in the log.
+  path(s). Each loop produces another S-M PR.
 - If no → stop. Report all PR links in one final summary message.
 
-**Never** write the same `scope` row twice. If Step 3 correctly consulted
-the three sources of truth, this cannot happen by accident; treat a
-collision as a bug in the scope decision and fix it before continuing.
+**Never** open a claim for a file that's already in the manifest with a
+matching `last_tested_commit`. If Step 3 correctly consulted the three
+sources of truth, this cannot happen by accident; treat a collision as
+a bug in the scope decision and fix it before continuing.
 
 ---
 
@@ -464,4 +501,6 @@ them in order; they build the story.
 
 Expected outcome: three PRs, one auto-merged (if you re-run easy on a file
 that's already been refactored), two review-required, all three tagged
-`Test Coverage`.
+`Test Coverage`. The post-merge Action then updates
+`tests/coverage-manifest.json` on `main` so the next `!test-coverage`
+run knows what's already done.

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import type { OAuth2Server } from "oauth2-mock-server";
-import { OidcIdentityProvider } from "./oidc-identity-provider";
+import { OidcIdentityProvider } from "../../../javascript/src/lib/oidc-identity-provider";
 
 /**
  * ====================================================================

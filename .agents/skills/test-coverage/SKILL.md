@@ -17,7 +17,13 @@ you can act on; it does not replace it.
 
 ### Shape
 
-- [ ] Sibling test file: `foo.ts` → `foo.test.ts` in the same folder.
+- [ ] Test file lives under `tests/<lang>/<mirror>/<name>.test.ts`,
+      mirroring the source path. **Never** put the test next to the
+      source.
+      Example: `javascript/src/lib/coverage-validation.ts` →
+      `tests/javascript/lib/coverage-validation.test.ts`.
+- [ ] Imports use a relative path up to the `javascript/src/` tree:
+      `import { foo } from "../../../javascript/src/lib/foo"`.
 - [ ] Use `vitest` (`import { describe, test, expect } from "vitest"`).
 - [ ] Fixture builders at the top of the file (`makeClaim()`, `glLine()`).
 - [ ] One `describe` block per behaviour family.
@@ -139,7 +145,8 @@ need to mock signing.
 
 ## Files to crib from
 
-- EASY reference: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/coverage-validation.test.ts" />
-- HARD 1 reference: <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/claim-transitions.test.ts" />
-- HARD 2 reference (pure IdP): <ref_file file="/home/ubuntu/repos/cognition/javascript/src/lib/oidc-identity-provider.test.ts" />
+- EASY reference: <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/coverage-validation.test.ts" />
+- HARD 1 reference: <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/claim-transitions.test.ts" />
+- HARD 2 reference (pure IdP): <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/lib/oidc-identity-provider.test.ts" />
+- HARD 2 reference (route integration): <ref_file file="/home/ubuntu/repos/cognition/tests/javascript/routes/auth.test.ts" />
 - HARD 2 reference (Express integration): <ref_file file="/home/ubuntu/repos/cognition/javascript/src/routes/auth.test.ts" />

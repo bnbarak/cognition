@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import express, { type Express } from "express";
 import request from "supertest";
 import type { OAuth2Server } from "oauth2-mock-server";
-import { createAuthRouter } from "./auth";
-import { OidcIdentityProvider } from "../lib/oidc-identity-provider";
+import { createAuthRouter } from "../../../javascript/src/routes/auth";
+import { OidcIdentityProvider } from "../../../javascript/src/lib/oidc-identity-provider";
 
 /**
  * ====================================================================
@@ -27,7 +27,10 @@ beforeAll(async () => {
   tokenEndpoint = `${server.issuer.url}/token`;
 
   server.service.on("beforeResponse", (response: { statusCode: number; body: unknown }, req: { body?: Record<string, string> }) => {
-    if (req.body?.grant_type === "password" && req.body?.username === "denied@example.com") {
+    if (req.body?.grant_type !== "password") return;
+    const usernameDenied = req.body?.username === "denied@example.com";
+    const passwordWrong = req.body?.password === "wrong";
+    if (usernameDenied || passwordWrong) {
       response.statusCode = 400;
       response.body = {
         error: "invalid_grant",
