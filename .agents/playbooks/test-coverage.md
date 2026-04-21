@@ -27,8 +27,9 @@ codebase.
 ```mermaid
 flowchart TD
     A[Step 1: Read<br/>testing-philosophy.md<br/>+ AGENTS.md / OWNERS] --> B[Step 2: npm install<br/>+ baseline coverage]
-    B --> S[Step 3: Decide scope<br/>group files by domain<br/>stop when leaving domain<br/>or PR exceeds M budget]
-    S --> C{Step 4: Classify each target<br/>in scope}
+    B --> S[Step 3: Decide scope<br/>consult 3 sources of truth:<br/>coverage report · open PRs · runs log<br/>group by domain · cap at S-M]
+    S --> SA[Announce scope<br/>chosen + deferred + why<br/>via message_user]
+    SA --> C{Step 4: Classify each target<br/>in scope}
 
     C -->|Pure function| E[Step 5a · EASY<br/>Export + write AAA tests]
     C -->|Logic tangled with I/O| H1[Step 5b · HARD 1<br/>Find seam → extract pure core<br/>→ handler orchestrates<br/>→ test the core]
@@ -50,8 +51,9 @@ flowchart TD
     RR1 --> PRR[Step 8-9: open PR<br/>minimalist title/body<br/>request review<br/>stop]
     RR2 --> PRR
 
-    PR --> Next{More untested files<br/>in another domain?}
-    PRR --> Next
+    PR --> Log[Append row to<br/>'Test Coverage Runs Log'<br/>Knowledge Note]
+    PRR --> Log
+    Log --> Next{More untested files<br/>in another domain?}
     Next -->|Yes| S
     Next -->|No| Done([Done — report PR links])
 ```
@@ -109,10 +111,38 @@ The input is a path, not a file list. Your job is to pick a coherent
 subset of files under that path such that **one PR covers one domain and
 stays S-M**. Everything outside that subset is a follow-up PR.
 
+**Three sources of truth (consult all, in order).** These prevent double
+work across sessions.
+
+1. **Coverage report** (objective, always current).
+   `cd javascript && npm run coverage` — drop any file already at or
+   above the target coverage. This catches anything that already
+   shipped.
+2. **Open PRs already in flight** (GitHub, filtered by the
+   `Test Coverage` label).
+   ```
+   git view_pr + label filter  → for each candidate file, check
+   whether an open PR already touches it. If so, skip; record the
+   PR link in the Deferred section.
+   ```
+   Use `git(action="view_pr")` / the GitHub API via the git tool to
+   list open PRs with label `Test Coverage`.
+3. **"Test Coverage Runs Log" Knowledge Note** (historical, repo-pinned).
+   Read it first: `devin_knowledge_manage(action="list", search="Test
+   Coverage Runs Log", pinned_repo="<owner>/<repo>")`. The note is
+   append-only and contains one row per past run with columns
+   `date | path | scope | PR | status`. Skip any file that appears in a
+   *merged* row with coverage ≥ target, or a *currently-open* row
+   (which Source-of-Truth 2 should also have caught). If two sources
+   disagree, source 1 (coverage report) wins.
+
+If the note doesn't exist yet, create it on this run (see Step 9).
+
 **Inputs**
 - The user-supplied path (file or directory).
 - The current test coverage of files under it — skip files already above
   the target coverage (≥ 85% stmts by default).
+- The three sources of truth above.
 
 **Domain signals (strongest first)**
 1. **`OWNERS` / `CODEOWNERS`** entry that matches the file. Files sharing
@@ -144,19 +174,47 @@ and note the rest in the PR description as a follow-up.
 
 **Algorithm**
 1. Expand the user-supplied path into the list of candidate files.
-2. Drop files that already meet the coverage target.
-3. Sort candidates by: untouched by tests first, then alphabetical.
-4. Start with the first candidate. For each subsequent candidate, include
-   it iff (a) it shares the dominant domain of the scope so far AND
-   (b) adding it keeps the scope within the M budget.
-5. Stop as soon as either condition fails. That's *this* PR's scope.
+2. Drop files that already meet the coverage target (source 1).
+3. Drop files already covered by an open `Test Coverage` PR (source 2).
+4. Drop files present in a merged row of the runs log (source 3).
+5. Sort what remains by: untouched by tests first, then alphabetical.
+6. Start with the first candidate. For each subsequent candidate,
+   include it iff (a) it shares the dominant domain of the scope so far
+   AND (b) adding it keeps the scope within the M budget.
+7. Stop as soon as either condition fails. That's *this* PR's scope.
    The remaining files are logged for the next run.
-6. If the resulting scope is empty (everything already covered), exit
-   cleanly and report "no scope to take."
+8. If the resulting scope is empty (everything already covered or
+   in-flight), exit cleanly and report "no scope to take — all files
+   are already at target coverage or covered by open PRs."
 
-**State the scope explicitly at the top of the PR body** — see Step 7.
-The reviewer needs to see what you *chose* to include and what you
-deferred.
+**Announce the scope decision to the user, in chat, before doing any
+writing.** Use `message_user` with `block_on_user=false`. The message
+must contain:
+
+- **Scope for this run** — the files you picked, their tier
+  (easy/hard1/hard2), and the predicted size (S or M).
+- **Deferred** — the files you are *not* touching this run, each with
+  a one-line reason (different OWNER / would push past M / already
+  covered / covered by open PR #NN).
+- **Source(s) consulted** — a one-line note: `coverage report: ✓ ·
+  open PRs: N · runs log: M rows`.
+
+Template:
+
+```
+Scope for this run (size: S, tier: HARD 1):
+  ✓ javascript/src/routes/claims.ts — state-machine refactor
+
+Deferred:
+  • clients.ts — different OWNER (clients/*)
+  • coi.ts — would exceed M budget (push to next run)
+  • auth.ts — covered by open PR #42
+
+Consulted: coverage report ✓ · open PRs: 1 match · runs log: 3 rows
+```
+
+State the same scope + deferred list at the top of the PR body (Step 8).
+The reviewer should see exactly what the user saw in chat.
 
 ### Step 4 — Classify each in-scope target (easy / hard1 / hard2)
 
@@ -330,19 +388,53 @@ Examples:
 - Do not explain the testing philosophy in the PR body — link the doc if
   needed.
 
-### Step 9 — Submit, then decide whether to continue
+### Step 9 — Submit, log the run, then decide whether to continue
 
-- Auto-merge lane: open the PR with both labels, wait for CI green,
+- **Auto-merge lane**: open the PR with both labels, wait for CI green,
   auto-merge.
-- Review-required lane: open the PR with `Test Coverage` label only,
+- **Review-required lane**: open the PR with `Test Coverage` label only,
   request review from the computed reviewer. Do not merge.
+
+**Append a row to the "Test Coverage Runs Log" Knowledge Note**
+(repo-pinned). This is how future runs know what was already covered.
+Use `devin_knowledge_manage`:
+
+```
+action=update, note_id=<id from the list call in Step 3>,
+body=<existing body + one new row>
+```
+
+If the note didn't exist when Step 3 ran, create it now:
+
+```
+action=create, pinned_repo="<owner>/<repo>",
+name="Test Coverage Runs Log",
+trigger="When starting a !test-coverage run",
+body=<the new row as a markdown table>
+```
+
+Row schema (one row per PR):
+
+| column    | meaning                                                |
+| --------- | ------------------------------------------------------ |
+| `date`    | ISO-8601, UTC                                          |
+| `path`    | user-supplied path that triggered the run              |
+| `scope`   | comma-separated list of files included in this PR      |
+| `tier`    | easy / hard1 / hard2 / mixed                           |
+| `size`    | S or M                                                 |
+| `PR`      | PR URL                                                 |
+| `status`  | `open` (update to `merged` / `closed` on next run)     |
 
 **After submit**, check whether the *Deferred* list from Step 3 is
 non-empty:
 
 - If yes → loop back to Step 3 with the deferred files as the new input
-  path(s). Each loop produces another S-M PR.
+  path(s). Each loop produces another S-M PR and another row in the log.
 - If no → stop. Report all PR links in one final summary message.
+
+**Never** write the same `scope` row twice. If Step 3 correctly consulted
+the three sources of truth, this cannot happen by accident; treat a
+collision as a bug in the scope decision and fix it before continuing.
 
 ---
 
