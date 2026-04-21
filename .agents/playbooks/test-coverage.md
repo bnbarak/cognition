@@ -22,6 +22,36 @@ codebase.
 
 ---
 
+## Flow at a glance
+
+```mermaid
+flowchart TD
+    A[Step 1: Read<br/>testing-philosophy.md<br/>+ AGENTS.md / OWNERS] --> B[Step 2: npm install<br/>+ baseline coverage]
+    B --> C{Step 3: Classify target}
+
+    C -->|Pure function| E[Step 4a · EASY<br/>Export + write AAA tests]
+    C -->|Logic tangled with I/O| H1[Step 4b · HARD 1<br/>Find seam → extract pure core<br/>→ handler orchestrates<br/>→ test the core]
+    C -->|Calls 3rd-party service| H2[Step 4c · HARD 2<br/>Vendor testkit first<br/>→ define interface<br/>→ inject → spin up testkit<br/>in beforeAll → test]
+
+    E --> R[Step 5: typecheck + test + coverage<br/>Record coverage delta]
+    H1 --> R
+    H2 --> R
+
+    R --> M{Step 6: Merge rule<br/>Diff is test-only AND<br/>no infra change?}
+
+    M -->|Yes| AM[Auto-merge lane<br/>Labels: Test Coverage<br/>+ Test Coverage Auto Merge]
+    M -->|No| RR{OWNERS / CODEOWNERS<br/>on the path?}
+
+    RR -->|Yes| RR1[Review-required · OWNERS<br/>Label: Test Coverage]
+    RR -->|No| RR2[Review-required · last non-bot author<br/>Label: Test Coverage]
+
+    AM --> PR[Step 7-8: open PR<br/>minimalist title/body<br/>wait for CI<br/>auto-merge]
+    RR1 --> PRR[Step 7-8: open PR<br/>minimalist title/body<br/>request review<br/>stop]
+    RR2 --> PRR
+```
+
+---
+
 ## What's Needed From User
 
 One of:
