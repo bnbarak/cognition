@@ -7,6 +7,7 @@ import type {
   ClaimStatus,
   ClaimNote,
 } from "../types/claim";
+import { advanceClaim } from "../lib/claim-transitions";
 
 const router = Router();
 
@@ -153,45 +154,27 @@ router.patch("/:claimNumber/status", (req: Request<{ claimNumber: string }, {}, 
     return;
   }
 
-  const newStatus = req.body.status;
-  const validTransitions: Record<ClaimStatus, ClaimStatus[]> = {
-    submitted: ["under_review", "denied"],
-    under_review: ["approved", "denied"],
-    approved: ["settled"],
-    denied: ["closed"],
-    settled: ["closed"],
-    closed: [],
-  };
+  const result = advanceClaim(claim, req.body.status, {
+    isoTimestamp: new Date().toISOString(),
+    approvedAmount: req.body.approvedAmount,
+    reason: req.body.reason,
+    noteIdGenerator: () => `note-${Date.now()}`,
+  });
 
-  if (!validTransitions[claim.status]?.includes(newStatus)) {
+  if (!result.ok) {
     res.status(409).json({
       success: false,
-      message: `Cannot transition from '${claim.status}' to '${newStatus}'`,
+      message: result.message,
     });
     return;
   }
 
-  if (newStatus === "approved" && req.body.approvedAmount != null) {
-    claim.approvedAmount = req.body.approvedAmount;
-  }
-
-  claim.status = newStatus;
-  claim.updatedAt = new Date().toISOString();
-
-  if (req.body.reason) {
-    claim.notes.push({
-      noteId: `note-${Date.now()}`,
-      author: "system",
-      content: `Status changed to ${newStatus}: ${req.body.reason}`,
-      createdAt: claim.updatedAt,
-      internal: true,
-    });
-  }
+  claims.set(result.claim.claimNumber, result.claim);
 
   res.json({
     success: true,
-    message: `Claim status updated to '${newStatus}'`,
-    data: claim,
+    message: `Claim status updated to '${result.claim.status}'`,
+    data: result.claim,
   });
 });
 

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "coverage-manifest",
+  "description": "Per-file record of test coverage for the !test-coverage playbook. Source of truth for which production files have been tested, when, and at which commit. One entry per production file — if the same file is re-tested later, the entry is updated in place (not appended).",
+  "type": "object",
+  "required": ["files"],
+  "properties": {
+    "description": { "type": "string" },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "test_file",
+          "tier",
+          "last_tested_commit",
+          "last_tested_date",
+          "coverage_after",
+          "pr"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "Production file path, relative to repo root."
+          },
+          "test_file": {
+            "type": "string",
+            "description": "Test file path, relative to repo root."
+          },
+          "tier": {
+            "type": "string",
+            "enum": ["easy", "hard1", "hard2", "mixed"],
+            "description": "Classification from Step 4 of the playbook."
+          },
+          "last_tested_commit": {
+            "type": "string",
+            "description": "40-char SHA of the commit that produced the current test coverage for this file."
+          },
+          "last_tested_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC ISO-8601 timestamp."
+          },
+          "coverage_after": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Statement coverage percentage after the test PR merged."
+          },
+          "pr": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the PR that produced this coverage entry."
+          }
+        }
+      }
+    }
+  }
+}
